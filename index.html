@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Panel">
+<meta name="theme-color" content="#0B0E11">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Panel</title>
+<style>
+  :root{
+    --ink:#0B0E11;
+    --surface:#12161A;
+    --hairline:#242A30;
+    --text:#E8ECEF;
+    --muted:#8A939B;
+    --faint:#4B5359;
+
+    --c-weather:#6FA8C9;
+    --c-running:#C2703F;
+    --c-stocks:#7FA66B;
+    --c-coffee:#B98B4E;
+    --c-workouts:#8B79B8;
+    --c-fitness:#C4586B;
+
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Menlo", monospace;
+    --sans: -apple-system, "SF Pro Text", "Inter", system-ui, sans-serif;
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{
+    margin:0; padding:0; width:100%; height:100%;
+    background:var(--ink); color:var(--text);
+    font-family:var(--sans);
+    overflow:hidden; position:fixed; inset:0;
+  }
+
+  #deck{
+    display:flex; width:100%; height:100%;
+    overflow-x:auto; overflow-y:hidden;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+  }
+  #deck::-webkit-scrollbar{ display:none; }
+
+  .panel{
+    flex:0 0 100%; width:100%; height:100%;
+    scroll-snap-align:start;
+    display:flex; flex-direction:column;
+    padding: max(28px, env(safe-area-inset-top)) 28px max(24px, env(safe-area-inset-bottom));
+    position:relative;
+  }
+
+  .eyebrow{
+    display:flex; align-items:center; justify-content:space-between;
+    font-family:var(--mono); font-size:12px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--accent, var(--muted));
+  }
+  .eyebrow .label{ display:flex; align-items:center; gap:8px; }
+  .status-dot{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--accent, var(--muted));
+    box-shadow:0 0 0 0 var(--accent, var(--muted));
+    animation:pulse 2.6s ease-out infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent);}
+    70%{ box-shadow:0 0 0 9px transparent;}
+    100%{ box-shadow:0 0 0 0 transparent;}
+  }
+  .clock{ color:var(--faint); }
+
+  .hero{
+    flex:1; display:flex; flex-direction:column;
+    align-items:flex-start; justify-content:center;
+    gap:6px;
+  }
+  .hero .big{
+    font-family:var(--mono); font-weight:300;
+    font-size:min(26vw, 148px); line-height:.92;
+    letter-spacing:-.02em; color:var(--text);
+  }
+  .hero .sub{
+    font-size:18px; color:var(--muted); font-weight:400;
+  }
+
+  .stats{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:14px 24px; border-top:1px solid var(--hairline); padding-top:18px;
+  }
+  .stat .k{ font-family:var(--mono); font-size:11px; letter-spacing:.1em; color:var(--faint); text-transform:uppercase; }
+  .stat .v{ font-family:var(--mono); font-size:20px; color:var(--text); margin-top:3px; }
+
+  .empty{
+    flex:1; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:8px;
+  }
+  .empty .big{ font-family:var(--mono); font-size:min(10vw,44px); color:var(--faint); font-weight:300; }
+  .empty .sub{ color:var(--faint); font-size:15px; max-width:320px; }
+
+  /* tick-dial nav */
+  #dial{
+    position:fixed; left:0; right:0; bottom:14px;
+    display:flex; justify-content:center; gap:10px;
+    pointer-events:none;
+  }
+  #dial .tick{
+    width:3px; height:14px; border-radius:2px;
+    background:var(--hairline);
+    transition:background .25s, height .25s;
+  }
+  #dial .tick.active{ height:20px; }
+
+  #mic{
+    position:fixed; right:18px; bottom:14px;
+    width:40px; height:40px; border-radius:50%;
+    border:1px solid var(--hairline); background:var(--surface);
+    color:var(--muted); display:flex; align-items:center; justify-content:center;
+    font-size:16px;
+  }
+  #mic.listening{ color:var(--ink); background:#E8ECEF; border-color:#E8ECEF; }
+  #voiceLabel{
+    position:fixed; right:18px; bottom:60px;
+    font-family:var(--mono); font-size:11px; color:var(--muted);
+    background:var(--surface); border:1px solid var(--hairline);
+    padding:5px 9px; border-radius:6px; opacity:0; transition:opacity .2s;
+  }
+</style>
+</head>
+<body>
+
+<div id="deck">
+
+  <!-- WEATHER -->
+  <section class="panel" data-name="weather" style="--accent:var(--c-weather)">
+    <div class="eyebrow">
+      <span class="label"><span class="status-dot"></span>WEATHER · MELBOURNE</span>
+      <span class="clock" id="clock">--:--</span>
+    </div>
+    <div class="hero">
+      <div class="big" id="w-temp">--°</div>
+      <div class="sub" id="w-cond">Loading conditions…</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">Feels like</div><div class="v" id="w-feels">--°</div></div>
+      <div class="stat"><div class="k">Wind</div><div class="v" id="w-wind">-- km/h</div></div>
+      <div class="stat"><div class="k">Humidity</div><div class="v" id="w-hum">--%</div></div>
+      <div class="stat"><div class="k">Rain chance</div><div class="v" id="w-rain">--%</div></div>
+    </div>
+  </section>
+
+  <!-- RUNNING -->
+  <section class="panel" data-name="running" style="--accent:var(--c-running)">
+    <div class="eyebrow"><span class="label"><span class="status-dot"></span>RUNNING · STRAVA</span><span class="clock" id="clock2">--:--</span></div>
+    <div class="empty">
+      <div class="big">not wired yet</div>
+      <div class="sub">Next build step: pull weekly distance, pace &amp; last run from Strava via a scheduled GitHub Action.</div>
+    </div>
+  </section>
+
+  <!-- WORKOUTS -->
+  <section class="panel" data-name="workouts" style="--accent:var(--c-workouts)">
+    <div class="eyebrow"><span class="label"><span class="status-dot"></span>WORKOUTS</span><span class="clock" id="clock3">--:--</span></div>
+    <div class="empty">
+      <div class="big">not wired yet</div>
+      <div class="sub">Needs a schedule source — a data/workouts.json file you (or Claude) edit, showing today's plan and this week's split.</div>
+    </div>
+  </section>
+
+  <!-- FITNESS -->
+  <section class="panel" data-name="fitness" style="--accent:var(--c-fitness)">
+    <div class="eyebrow"><span class="label"><span class="status-dot"></span>FITNESS</span><span class="clock" id="clock4">--:--</span></div>
+    <div class="empty">
+      <div class="big">not wired yet</div>
+      <div class="sub">Candidate sources: Strava (activity load), Apple Health export, or a manual weight/metrics log.</div>
+    </div>
+  </section>
+
+  <!-- COFFEE -->
+  <section class="panel" data-name="coffee" style="--accent:var(--c-coffee)">
+    <div class="eyebrow"><span class="label"><span class="status-dot"></span>COFFEE</span><span class="clock" id="clock5">--:--</span></div>
+    <div class="empty">
+      <div class="big">not wired yet</div>
+      <div class="sub">No tracker exists yet — proposal: a tiny data/coffee.json log (bean, brew method, rating) you update by voice or a quick form.</div>
+    </div>
+  </section>
+
+  <!-- STOCKS -->
+  <section class="panel" data-name="stocks" style="--accent:var(--c-stocks)">
+    <div class="eyebrow"><span class="label"><span class="status-dot"></span>STOCKS · IBKR</span><span class="clock" id="clock6">--:--</span></div>
+    <div class="empty">
+      <div class="big">not wired yet</div>
+      <div class="sub">Needs a market-data source with an API key (IBKR web API or a free quote feed) pulled on a shorter interval during market hours.</div>
+    </div>
+  </section>
+
+</div>
+
+<div id="dial"></div>
+<div id="voiceLabel"></div>
+<button id="mic" aria-label="Voice command">🎙</button>
+
+<script>
+const panels = [...document.querySelectorAll('.panel')];
+const deck = document.getElementById('deck');
+const dial = document.getElementById('dial');
+
+panels.forEach((p,i)=>{
+  const t = document.createElement('div');
+  t.className = 'tick' + (i===0 ? ' active' : '');
+  dial.appendChild(t);
+});
+const ticks = [...dial.children];
+
+function setActiveByScroll(){
+  const i = Math.round(deck.scrollLeft / deck.clientWidth);
+  ticks.forEach((t,idx)=>t.classList.toggle('active', idx===i));
+}
+deck.addEventListener('scroll', ()=>{ requestAnimationFrame(setActiveByScroll); }, {passive:true});
+
+function goTo(name){
+  const idx = panels.findIndex(p=>p.dataset.name===name);
+  if(idx>-1) deck.scrollTo({left: idx*deck.clientWidth, behavior:'smooth'});
+}
+// deep link support: index.html#stocks
+if(location.hash) goTo(location.hash.slice(1));
+window.addEventListener('hashchange', ()=>goTo(location.hash.slice(1)));
+
+// live clocks
+function tick(){
+  const s = new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+  document.querySelectorAll('.clock').forEach(el=>el.textContent = s);
+}
+tick(); setInterval(tick, 15000);
+
+// weather data
+async function loadWeather(){
+  try{
+    const res = await fetch('data/weather.json', {cache:'no-store'});
+    const d = await res.json();
+    document.getElementById('w-temp').textContent = Math.round(d.temp) + '°';
+    document.getElementById('w-cond').textContent = d.condition;
+    document.getElementById('w-feels').textContent = Math.round(d.feels_like) + '°';
+    document.getElementById('w-wind').textContent = Math.round(d.wind_kmh) + ' km/h';
+    document.getElementById('w-hum').textContent = Math.round(d.humidity) + '%';
+    document.getElementById('w-rain').textContent = Math.round(d.rain_chance) + '%';
+  }catch(e){
+    document.getElementById('w-cond').textContent = 'Data not available yet';
+  }
+}
+loadWeather();
+setInterval(loadWeather, 5*60*1000);
+
+// voice commands
+const micBtn = document.getElementById('mic');
+const voiceLabel = document.getElementById('voiceLabel');
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const routes = {
+  weather:['weather'], running:['running','run'], workouts:['workout','workouts'],
+  fitness:['fitness','health'], coffee:['coffee'], stocks:['stocks','market','portfolio']
+};
+if(SR){
+  const rec = new SR();
+  rec.continuous = false; rec.interimResults = false; rec.lang = 'en-AU';
+  micBtn.addEventListener('click', ()=>{
+    micBtn.classList.add('listening');
+    voiceLabel.style.opacity = 1; voiceLabel.textContent = 'listening…';
+    rec.start();
+  });
+  rec.onresult = (e)=>{
+    const heard = e.results[0][0].transcript.toLowerCase();
+    voiceLabel.textContent = heard;
+    let matched = null;
+    if(/next/.test(heard)){
+      const i = Math.round(deck.scrollLeft/deck.clientWidth);
+      goTo(panels[Math.min(i+1, panels.length-1)].dataset.name); matched = true;
+    } else if(/back|previous/.test(heard)){
+      const i = Math.round(deck.scrollLeft/deck.clientWidth);
+      goTo(panels[Math.max(i-1,0)].dataset.name); matched = true;
+    } else {
+      for(const [name, words] of Object.entries(routes)){
+        if(words.some(w=>heard.includes(w))){ goTo(name); matched = true; break; }
+      }
+    }
+    if(!matched) voiceLabel.textContent = 'not recognized: "' + heard + '"';
+    setTimeout(()=>voiceLabel.style.opacity=0, 1800);
+  };
+  rec.onend = ()=> micBtn.classList.remove('listening');
+  rec.onerror = ()=> { micBtn.classList.remove('listening'); voiceLabel.style.opacity=0; };
+} else {
+  micBtn.style.display = 'none';
+}
+
+// register service worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
