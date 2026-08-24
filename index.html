@@ -837,7 +837,12 @@ function parseIssueField(body, label){
   return v === '_No response_' ? '' : v;
 }
 function extractImageUrl(body){
-  const m = body.match(/!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/);
+  // GitHub embeds a dropped/pasted image as either markdown ![...](url)
+  // or an HTML <img src="..."> tag (the latter is what it actually uses
+  // for images pasted into issue-form textareas) — check both.
+  let m = body.match(/!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/);
+  if(m) return m[1];
+  m = body.match(/<img[^>]*\bsrc=["']([^"']+)["']/i);
   return m ? m[1] : '';
 }
 function ratioString(dose, yld){
