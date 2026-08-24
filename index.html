@@ -253,6 +253,59 @@
     transition:opacity .22s ease, transform .22s ease;
   }
 
+  /* COFFEE panel — bean catalog */
+  .coffee-setup{
+    display:flex; gap:30px; flex-wrap:wrap; flex-shrink:0;
+    padding-bottom:16px; margin-bottom:18px; border-bottom:1px solid var(--border);
+  }
+  .coffee-setup .spec .k{ font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); }
+  .coffee-setup .spec .v{ font-family:var(--sans); font-size:14px; color:var(--text); margin-top:3px; }
+
+  .blend-cols{ flex:1; display:grid; grid-template-columns:1fr 1fr; gap:26px; min-height:0; }
+  .blend-col{ display:flex; flex-direction:column; gap:13px; min-height:0; }
+  .bean-grid{
+    flex:1; display:grid; grid-template-columns:repeat(auto-fill, minmax(148px,1fr));
+    align-content:start; gap:14px; overflow-y:auto; min-height:60px;
+    border-radius:var(--radius); transition:background-color .15s;
+  }
+  .bean-grid.drag-over{ background-color:color-mix(in srgb, var(--c-coffee) 7%, transparent); }
+  .bean-empty{ font-family:var(--mono); font-size:11px; color:var(--faint); grid-column:1/-1; }
+  .bean-empty a{ color:var(--c-coffee); }
+
+  .bean-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    box-shadow:var(--shadow); overflow:hidden; cursor:grab; touch-action:none;
+    display:flex; flex-direction:column;
+  }
+  .bean-card.lifting{ box-shadow:0 14px 30px rgba(43,38,32,.2); cursor:grabbing; opacity:.96; }
+  .bean-img{ width:100%; aspect-ratio:4/3; object-fit:cover; display:block; background:var(--bg); }
+  .bean-img-ph{ width:100%; aspect-ratio:4/3; background:var(--bg); display:flex; align-items:center; justify-content:center; color:var(--faint); }
+  .bean-img-ph svg{ width:26px; height:26px; }
+  .bean-info{ padding:11px 12px 12px; display:flex; flex-direction:column; gap:2px; }
+  .bean-name{ font-family:var(--display); font-style:italic; font-weight:500; font-size:14px; color:var(--text); line-height:1.25; }
+  .bean-roaster{ font-size:11px; color:var(--muted); }
+  .bean-recipe{ font-family:var(--mono); font-size:10px; color:var(--faint); margin-top:3px; }
+
+  .bean-modal-backdrop{
+    position:fixed; inset:0; background:rgba(43,38,32,.4); backdrop-filter:blur(3px);
+    display:none; align-items:center; justify-content:center; z-index:200; padding:40px;
+  }
+  .bean-modal-backdrop.open{ display:flex; }
+  .bean-modal{
+    background:var(--surface); border-radius:16px; box-shadow:0 30px 70px rgba(43,38,32,.28);
+    max-width:480px; width:100%; max-height:100%; overflow-y:auto; position:relative;
+  }
+  .bean-modal-close{
+    position:absolute; top:14px; right:14px; width:30px; height:30px; border-radius:50%;
+    background:var(--surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:var(--muted);
+  }
+  .bean-modal-close svg{ width:14px; height:14px; }
+  .bean-modal-img{ width:100%; aspect-ratio:16/10; object-fit:cover; display:block; }
+  .bean-modal-body{ padding:24px 26px 28px; display:flex; flex-direction:column; gap:16px; }
+  .bean-modal-body .bean-name{ font-size:23px; }
+  .bean-modal-body .bean-roaster{ font-size:14px; margin-top:5px; }
+
   /* tick-dial nav */
   #dial{
     position:fixed; left:0; right:0; bottom:14px;
@@ -360,6 +413,32 @@
     </div>
   </section>
 
+  <!-- COFFEE -->
+  <section class="panel" data-name="coffee" style="--accent:var(--c-coffee)">
+    <div class="watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3c0 1-1 1-1 2"/><path d="M12 3c0 1-1 1-1 2"/></svg></div>
+    <div class="eyebrow">
+      <span class="label">
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3c0 1-1 1-1 2"/><path d="M12 3c0 1-1 1-1 2"/></svg></span>
+        <span class="status-dot" id="coffee-status"></span>COFFEE
+        <span class="connect-link" id="coffee-connect">connect</span>
+      </span>
+      <span class="clock">--:--</span>
+    </div>
+
+    <div class="coffee-setup" id="coffee-setup"></div>
+
+    <div class="blend-cols">
+      <div class="blend-col">
+        <div class="card-label" style="color:var(--c-coffee)">Specialty Blend <span class="todo-count" id="blend-count-specialty"></span></div>
+        <div class="bean-grid" id="bean-grid-specialty"><div class="bean-empty">Loading…</div></div>
+      </div>
+      <div class="blend-col">
+        <div class="card-label" style="color:var(--c-coffee)">House Blend <span class="todo-count" id="blend-count-house"></span></div>
+        <div class="bean-grid" id="bean-grid-house"><div class="bean-empty">Loading…</div></div>
+      </div>
+    </div>
+  </section>
+
   <!-- WEATHER -->
   <section class="panel" data-name="weather" style="--accent:var(--c-weather)">
     <div class="watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 1 1 .9-7.9A5 5 0 0 1 17 12h.5a3.5 3.5 0 0 1 0 7H7Z"/></svg></div>
@@ -431,23 +510,6 @@
     </div>
   </section>
 
-  <!-- COFFEE -->
-  <section class="panel" data-name="coffee" style="--accent:var(--c-coffee)">
-    <div class="watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3c0 1-1 1-1 2"/><path d="M12 3c0 1-1 1-1 2"/></svg></div>
-    <div class="eyebrow">
-      <span class="label">
-        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3c0 1-1 1-1 2"/><path d="M12 3c0 1-1 1-1 2"/></svg></span>
-        <span class="status-dot live"></span>COFFEE
-      </span>
-      <span class="clock">--:--</span>
-    </div>
-    <div id="coffee-body" style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:20px;">
-      <div class="empty" style="flex:none;">
-        <div class="big">loading…</div>
-      </div>
-    </div>
-  </section>
-
   <!-- STOCKS -->
   <section class="panel" data-name="stocks" style="--accent:var(--c-stocks)">
     <div class="watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="m6 15 4-4 3 3 5-6"/></svg></div>
@@ -465,6 +527,8 @@
   </section>
 
 </div>
+
+<div class="bean-modal-backdrop" id="bean-modal-backdrop"></div>
 
 <div id="dial"></div>
 <div id="voiceLabel"></div>
@@ -544,71 +608,6 @@ async function loadWeather(){
 }
 loadWeather();
 setInterval(loadWeather, 5*60*1000);
-
-// coffee data
-function starString(rating){
-  const n = Math.max(0, Math.min(5, rating|0));
-  return '●'.repeat(n) + '○'.repeat(5-n);
-}
-async function loadCoffee(){
-  const body = document.getElementById('coffee-body');
-  try{
-    const res = await fetch('data/coffee.json', {cache:'no-store'});
-    const entries = await res.json();
-    if(!entries.length){
-      body.innerHTML = `<div class="empty" style="flex:none;">
-        <div class="big">no entries yet</div>
-        <div class="sub">Log one via the <a href="https://github.com/arshc1702/personal-dashboards/issues/new?template=coffee-log.yml" target="_blank" rel="noopener">Coffee issue template</a>.</div>
-      </div>`;
-      return;
-    }
-    const latest = entries[0];
-    const rest = entries.slice(1, 5);
-    let html = `
-      <div>
-        <div class="card-label" style="margin-bottom:10px;">Last brew</div>
-        <div style="font-family:var(--display); font-style:italic; font-size:29px; font-weight:500; color:var(--text);">${latest.bean || 'Unnamed bean'}</div>
-        <div style="font-size:15px; color:var(--muted); margin-top:4px;">${[latest.origin, latest.method].filter(Boolean).join(' · ')}</div>
-        <div style="font-family:var(--mono); font-size:16px; color:var(--c-coffee); margin-top:10px; letter-spacing:.08em;">${starString(latest.rating)}</div>
-        ${latest.notes ? `<div style="font-size:14px; color:var(--muted); margin-top:10px; max-width:520px; line-height:1.5;">${latest.notes}</div>` : ''}
-      </div>`;
-    if(rest.length){
-      html += `<div style="display:flex; flex-direction:column; gap:10px; padding-top:16px; border-top:1px solid var(--border);">`;
-      for(const e of rest){
-        html += `<div style="display:flex; justify-content:space-between; align-items:baseline; font-size:14px;">
-          <span style="color:var(--text);">${e.bean || 'Unnamed bean'}</span>
-          <span style="font-family:var(--mono); color:var(--faint);">${starString(e.rating)}</span>
-        </div>`;
-      }
-      html += `</div>`;
-    }
-
-    // "this month" — pure client-side arithmetic over what's already loaded, no new data source
-    const now = new Date();
-    const thisMonth = entries.filter(e => {
-      const d = new Date(e.date);
-      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-    });
-    if(thisMonth.length){
-      const rated = thisMonth.filter(e => typeof e.rating === 'number');
-      const avg = rated.length ? (rated.reduce((s,e)=>s+e.rating,0) / rated.length) : null;
-      const methodCounts = {};
-      for(const e of thisMonth){ if(e.method) methodCounts[e.method] = (methodCounts[e.method]||0) + 1; }
-      const topMethod = Object.keys(methodCounts).sort((a,b)=>methodCounts[b]-methodCounts[a])[0];
-      html += `
-        <div style="display:flex; gap:32px; padding-top:16px; margin-top:2px; border-top:1px solid var(--border);">
-          <div><div class="card-label">This month</div><div style="font-family:var(--mono); font-size:20px; color:var(--text); margin-top:4px;">${thisMonth.length}</div></div>
-          ${avg !== null ? `<div><div class="card-label">Avg rating</div><div style="font-family:var(--mono); font-size:20px; color:var(--c-coffee); margin-top:4px;">${avg.toFixed(1)}</div></div>` : ''}
-          ${topMethod ? `<div><div class="card-label">Top method</div><div style="font-family:var(--mono); font-size:20px; color:var(--text); margin-top:4px;">${escapeHtml(topMethod)}</div></div>` : ''}
-        </div>`;
-    }
-    body.innerHTML = html;
-  }catch(e){
-    body.innerHTML = `<div class="empty" style="flex:none;"><div class="big">data not available yet</div></div>`;
-  }
-}
-loadCoffee();
-setInterval(loadCoffee, 5*60*1000);
 
 // todos data (GitHub Issues as the store — see CLAUDE.md "Interactive write" pattern)
 const GH_REPO = 'arshc1702/personal-dashboards';
@@ -752,12 +751,16 @@ loadTodos();
 setInterval(loadTodos, 2*60*1000);
 updateTodosConnectUI();
 
+function updateAllConnectUI(){
+  updateTodosConnectUI();
+  updateCoffeeConnectUI();
+}
 document.getElementById('todos-connect')?.addEventListener('click', ()=>{
   if(ghToken()){
-    if(confirm('Disconnect this device\'s GitHub token?')){ clearGhToken(); updateTodosConnectUI(); }
+    if(confirm('Disconnect this device\'s GitHub token?')){ clearGhToken(); updateAllConnectUI(); }
   } else {
     ensureToken();
-    updateTodosConnectUI();
+    updateAllConnectUI();
   }
 });
 
@@ -820,6 +823,254 @@ document.querySelector('.todos-grid')?.addEventListener('click', (e)=>{
     }, 240);
   }, 220);
 });
+
+// coffee bean catalog (GitHub Issues as the store — same interactive-write
+// pattern as Todos, see CLAUDE.md)
+const COFFEE_LABEL = 'coffee-bean';
+const BLEND_LABEL = { specialty: 'blend:specialty', house: 'blend:house' };
+
+function parseIssueField(body, label){
+  const re = new RegExp('### ' + label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\s*\\n+(.*?)(?=\\n### |$)', 's');
+  const m = body.match(re);
+  if(!m) return '';
+  const v = m[1].trim();
+  return v === '_No response_' ? '' : v;
+}
+function extractImageUrl(body){
+  const m = body.match(/!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/);
+  return m ? m[1] : '';
+}
+function ratioString(dose, yld){
+  const d = parseFloat(dose), y = parseFloat(yld);
+  if(!d || !y) return '';
+  return '1:' + (y/d).toFixed(1);
+}
+
+let beansCache = { specialty: [], house: [] };
+
+function updateCoffeeConnectUI(){
+  const has = !!ghToken();
+  document.getElementById('coffee-status')?.classList.toggle('live', has);
+  const link = document.getElementById('coffee-connect');
+  if(link) link.textContent = has ? 'connected' : 'connect';
+}
+document.getElementById('coffee-connect')?.addEventListener('click', ()=>{
+  if(ghToken()){
+    if(confirm('Disconnect this device\'s GitHub token?')){ clearGhToken(); updateAllConnectUI(); }
+  } else {
+    ensureToken();
+    updateAllConnectUI();
+  }
+});
+
+async function loadCoffeeSetup(){
+  const el = document.getElementById('coffee-setup');
+  if(!el) return;
+  try{
+    const res = await fetch('data/coffee-setup.json', {cache:'no-store'});
+    const specs = await res.json();
+    el.innerHTML = (Array.isArray(specs) && specs.length)
+      ? specs.map(s => `<div class="spec"><div class="k">${escapeHtml(s.label)}</div><div class="v">${escapeHtml(s.value)}</div></div>`).join('')
+      : `<div style="font-family:var(--mono); font-size:11px; color:var(--faint);">Setup not added yet</div>`;
+  }catch(e){
+    el.innerHTML = '';
+  }
+}
+loadCoffeeSetup();
+
+function beanCardHtml(b){
+  const img = b.image
+    ? `<img class="bean-img" src="${b.image}" alt="" draggable="false">`
+    : `<div class="bean-img-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/></svg></div>`;
+  const recipeParts = [];
+  if(b.dose && b.yield) recipeParts.push(`${b.dose} → ${b.yield}`);
+  else if(b.dose) recipeParts.push(b.dose);
+  if(b.time) recipeParts.push(b.time);
+  return `<div class="bean-card" data-number="${b.number}">
+    ${img}
+    <div class="bean-info">
+      <div class="bean-name">${escapeHtml(b.name)}</div>
+      ${b.roaster ? `<div class="bean-roaster">${escapeHtml(b.roaster)}</div>` : ''}
+      ${recipeParts.length ? `<div class="bean-recipe">${escapeHtml(recipeParts.join(' · '))}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+function renderCoffeePanel(errored){
+  const gridS = document.getElementById('bean-grid-specialty');
+  const gridH = document.getElementById('bean-grid-house');
+  const countS = document.getElementById('blend-count-specialty');
+  const countH = document.getElementById('blend-count-house');
+  if(!gridS || !gridH) return;
+  if(errored){
+    gridS.innerHTML = `<div class="bean-empty">Couldn't load — check connection</div>`;
+    gridH.innerHTML = '';
+    return;
+  }
+  if(countS) countS.textContent = beansCache.specialty.length ? `· ${beansCache.specialty.length}` : '';
+  if(countH) countH.textContent = beansCache.house.length ? `· ${beansCache.house.length}` : '';
+  gridS.innerHTML = beansCache.specialty.length
+    ? beansCache.specialty.map(beanCardHtml).join('')
+    : `<div class="bean-empty">No beans yet — add one via the <a href="https://github.com/${GH_REPO}/issues/new?template=coffee-bean.yml" target="_blank" rel="noopener">Coffee bean issue template</a>.</div>`;
+  gridH.innerHTML = beansCache.house.length
+    ? beansCache.house.map(beanCardHtml).join('')
+    : `<div class="bean-empty">Drag a bean here, or add one already set to House Blend.</div>`;
+  attachBeanCardHandlers();
+}
+
+async function loadCoffeeBeans(){
+  try{
+    let res = await ghFetch(`/issues?labels=${COFFEE_LABEL}&state=open&per_page=100`, {cache:'no-store'});
+    if(res.status === 401){
+      res = await fetch(`https://api.github.com/repos/${GH_REPO}/issues?labels=${COFFEE_LABEL}&state=open&per_page=100`, {cache:'no-store'});
+    }
+    if(!res.ok) throw new Error('bad response');
+    const issues = await res.json();
+    const grouped = { specialty: [], house: [] };
+    for(const issue of issues){
+      if(issue.pull_request) continue;
+      const body = issue.body || '';
+      const names = (issue.labels||[]).map(l => l.name);
+      const blendKey = names.includes(BLEND_LABEL.house) ? 'house' : 'specialty';
+      grouped[blendKey].push({
+        number: issue.number,
+        name: parseIssueField(body, 'Bean Name') || issue.title,
+        roaster: parseIssueField(body, 'Roaster / Cafe'),
+        origin: parseIssueField(body, 'Origin'),
+        dose: parseIssueField(body, 'Dose'),
+        yield: parseIssueField(body, 'Yield'),
+        time: parseIssueField(body, 'Time'),
+        notes: parseIssueField(body, 'Notes'),
+        image: extractImageUrl(body),
+      });
+    }
+    beansCache = grouped;
+    renderCoffeePanel();
+  }catch(e){
+    renderCoffeePanel(true);
+  }
+}
+loadCoffeeBeans();
+setInterval(loadCoffeeBeans, 2*60*1000);
+
+function openBeanModal(number){
+  const bean = [...beansCache.specialty, ...beansCache.house].find(b => b.number === number);
+  if(!bean) return;
+  const backdrop = document.getElementById('bean-modal-backdrop');
+  const ratio = ratioString(bean.dose, bean.yield);
+  backdrop.innerHTML = `
+    <div class="bean-modal">
+      <div class="bean-modal-close" id="bean-modal-close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </div>
+      ${bean.image ? `<img class="bean-modal-img" src="${bean.image}" alt="">` : ''}
+      <div class="bean-modal-body">
+        <div>
+          <div class="bean-name">${escapeHtml(bean.name)}</div>
+          <div class="bean-roaster">${escapeHtml([bean.roaster, bean.origin].filter(Boolean).join(' · '))}</div>
+        </div>
+        ${(bean.dose || bean.yield || bean.time) ? `
+        <div style="display:flex; gap:28px; flex-wrap:wrap; padding-top:14px; border-top:1px solid var(--border);">
+          ${bean.dose ? `<div><div class="k">Dose</div><div class="v">${escapeHtml(bean.dose)}</div></div>` : ''}
+          ${bean.yield ? `<div><div class="k">Yield</div><div class="v">${escapeHtml(bean.yield)}</div></div>` : ''}
+          ${bean.time ? `<div><div class="k">Time</div><div class="v">${escapeHtml(bean.time)}</div></div>` : ''}
+          ${ratio ? `<div><div class="k">Ratio</div><div class="v">${ratio}</div></div>` : ''}
+        </div>` : ''}
+        ${bean.notes ? `<div style="font-size:14px; color:var(--muted); line-height:1.6;">${escapeHtml(bean.notes)}</div>` : ''}
+      </div>
+    </div>`;
+  backdrop.classList.add('open');
+  document.getElementById('bean-modal-close').addEventListener('click', closeBeanModal);
+}
+function closeBeanModal(){
+  document.getElementById('bean-modal-backdrop').classList.remove('open');
+}
+document.getElementById('bean-modal-backdrop')?.addEventListener('click', (e)=>{
+  if(e.target.id === 'bean-modal-backdrop') closeBeanModal();
+});
+
+async function moveBean(number, targetBlend){
+  const currentBlend = beansCache.specialty.some(b => b.number === number) ? 'specialty' : 'house';
+  if(!targetBlend || targetBlend === currentBlend){ renderCoffeePanel(); return; }
+  if(!ensureToken()){ updateAllConnectUI(); renderCoffeePanel(); return; }
+  updateAllConnectUI();
+  const bean = beansCache[currentBlend].find(b => b.number === number);
+  beansCache[currentBlend] = beansCache[currentBlend].filter(b => b.number !== number);
+  beansCache[targetBlend] = [...beansCache[targetBlend], bean];
+  renderCoffeePanel();
+  try{
+    const res = await ghFetch(`/issues/${number}`, {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ labels: [COFFEE_LABEL, BLEND_LABEL[targetBlend]] })
+    });
+    if(!res.ok) throw new Error('failed');
+  }catch(err){
+    alert('Could not save that on GitHub — reloading to check the current state.');
+    loadCoffeeBeans();
+  }
+}
+
+function attachBeanCardHandlers(){
+  document.querySelectorAll('.bean-card').forEach(card=>{
+    const number = parseInt(card.dataset.number, 10);
+    let startX, startY, dragging = false, moved = false, origRect = null;
+
+    card.addEventListener('pointerdown', (e)=>{
+      startX = e.clientX; startY = e.clientY; dragging = false; moved = false;
+      card.setPointerCapture(e.pointerId);
+    });
+
+    card.addEventListener('pointermove', (e)=>{
+      if(startX === undefined) return;
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      if(!dragging && Math.hypot(dx, dy) > 10){
+        dragging = true;
+        origRect = card.getBoundingClientRect();
+        card.classList.add('lifting');
+        card.style.position = 'fixed';
+        card.style.width = origRect.width + 'px';
+        card.style.left = origRect.left + 'px';
+        card.style.top = origRect.top + 'px';
+      }
+      if(dragging){
+        moved = true;
+        card.style.left = (origRect.left + dx) + 'px';
+        card.style.top = (origRect.top + dy) + 'px';
+        document.querySelectorAll('.bean-grid').forEach(g => g.classList.remove('drag-over'));
+        card.style.pointerEvents = 'none';
+        const under = document.elementFromPoint(e.clientX, e.clientY);
+        card.style.pointerEvents = '';
+        const grid = under && under.closest('.bean-grid');
+        if(grid) grid.classList.add('drag-over');
+      }
+    });
+
+    card.addEventListener('pointerup', (e)=>{
+      document.querySelectorAll('.bean-grid').forEach(g => g.classList.remove('drag-over'));
+      if(dragging){
+        card.style.pointerEvents = 'none';
+        const under = document.elementFromPoint(e.clientX, e.clientY);
+        card.style.pointerEvents = '';
+        const grid = under && under.closest('.bean-grid');
+        const targetBlend = grid ? grid.id.replace('bean-grid-', '') : null;
+        card.classList.remove('lifting');
+        card.style.position = ''; card.style.left = ''; card.style.top = ''; card.style.width = '';
+        moveBean(number, targetBlend);
+      } else if(!moved){
+        openBeanModal(number);
+      }
+      startX = undefined; dragging = false;
+    });
+
+    card.addEventListener('pointercancel', ()=>{
+      card.classList.remove('lifting');
+      card.style.position = ''; card.style.left = ''; card.style.top = ''; card.style.width = '';
+      document.querySelectorAll('.bean-grid').forEach(g => g.classList.remove('drag-over'));
+      startX = undefined; dragging = false;
+    });
+  });
+}
 
 // voice commands
 const micBtn = document.getElementById('mic');

@@ -7,7 +7,7 @@ anything remembered from a prior chat.
 ## What this is
 
 An always-on personal dashboard for a spare iPad: full-screen swipeable
-panels (Home, Todos, Weather, Running, Workouts, Fitness, Coffee, Stocks),
+panels (Home, Todos, Coffee, Weather, Running, Workouts, Fitness, Stocks),
 installed as a PWA, with tap-to-talk voice nav and Siri Shortcut deep-links.
 Single static site, no framework, no traditional server (Todos writes
 directly to the GitHub API from the browser — see Architecture — but there
@@ -26,8 +26,8 @@ public" below)
 |---|---|---|
 | Home | Live (partial) | Summary/front-page panel, first in the deck. Weather tile and Today (todos) tile are both live; workout/headlines/stocks tiles are honest empty states until those sources exist |
 | Todos | Live | GitHub Issues, read live client-side + written directly from the panel via an on-device token — see Architecture pattern 3 |
+| Coffee | Live | Bean catalog, same pattern 3 as Todos (GitHub Issues + on-device token). Drag-and-drop between Specialty/House Blend, click a card for a detail modal. See Coffee panel note below |
 | Weather | Live | Open-Meteo, no auth, Action every 15 min. Also carries a 6-hour hourly forecast (`data.hourly`) for the panel's trend strip |
-| Coffee | Live | GitHub Issue form → Action parses → `data/coffee.json`. Panel also computes a "this month" stat rail (count/avg rating/top method) client-side from the same array — no new data source |
 | Running | Not built | Strava API — needs OAuth app registration |
 | Stocks | Not built | IBKR web API or a free quote feed — needs credentials |
 | Workouts | Not built | No tracker exists — likely same issue-form pattern as Coffee |
@@ -46,35 +46,56 @@ a fourth without discussing it first:**
    with `cache:'no-store'` on load + every 5 min. See
    `.github/workflows/update-weather.yml` + `scripts/fetch_weather.py` as the
    template — copy this pattern, including the "commit only if changed" step.
-2. **Manual log via GitHub Issue form** (Coffee, and likely Workouts): an
+2. **Manual log via GitHub Issue form** (likely Workouts): an
    issue-form template in `.github/ISSUE_TEMPLATE/`, an Action triggered on
    `issues: opened` filtered by label, a Python parser reading
    `GITHUB_EVENT_PATH` (never the raw env var — issue bodies can contain
-   characters that break shell escaping), appends to the JSON, closes the
-   issue. See `.github/workflows/log-coffee.yml` +
-   `scripts/log_coffee.py` as the template.
-3. **Interactive write via GitHub Issues + on-device token** (Todos — the
-   only bidirectional/interactive panel so far): each task is a GitHub Issue
-   (open = active, closed = done), tagged with the universal `todo` label
-   plus one `category:<x>` label. Reads (`GET /issues?labels=todo`) are
-   unauthenticated — the repo is public, so any device can view the panel
-   with zero setup. Writes (add task = `POST /issues`, complete = `PATCH
-   /issues/{n}` with `state:closed`) go straight from browser JS to
+   characters that break shell escaping), appends to a `data/*.json` file,
+   closes the issue. No current panel uses this pattern anymore (Coffee
+   used to — see below — and was migrated off it); the closest reference
+   left in history is the git log around the original Coffee build. Still a
+   valid pattern for a panel that's genuinely append-only and never needs
+   editing/recategorizing from the dashboard itself.
+3. **Interactive write via GitHub Issues + on-device token** (Todos and
+   Coffee): each record is a GitHub Issue, categorized by label, read live
+   and written directly from the panel. Reads (`GET /issues?labels=...`)
+   are unauthenticated — the repo is public, so any device can view either
+   panel with zero setup. Writes go straight from browser JS to
    `api.github.com`, authenticated with a personal access token the owner
    pastes in once per device (`prompt()`-based `ensureToken()` flow in
    `index.html`, stored in that device's `localStorage` under
-   `panel_gh_token` — **never** committed anywhere). **Security posture:**
-   only ever tell the owner to use a **fine-grained PAT scoped to just this
-   one repo, Issues: Read and write permission only** — never a classic PAT
-   with broad `repo` scope, since the token lives in browser storage on a
-   personal device, not a vetted secrets store. **Resilience gotcha:**
-   `loadTodos()` in `index.html` retries once, unauthenticated, on a 401 —
-   an expired/bad token must only break the write path (add/complete),
-   never the read-only viewing experience across other devices. Keep that
-   fallback if you touch this code. This pattern is the right fit *only*
-   when the panel genuinely needs add/edit/complete from the dashboard
-   itself — for anything append-only, pattern 2 (Issue form) is simpler and
-   needs no client-side token at all.
+   `panel_gh_token` — **never** committed anywhere, and **shared** across
+   both panels — one token, one `connect` action, covers Todos and Coffee).
+   **Security posture:** only ever tell the owner to use a **fine-grained
+   PAT scoped to just this one repo, Issues: Read and write permission
+   only** — never a classic PAT with broad `repo` scope, since the token
+   lives in browser storage on a personal device, not a vetted secrets
+   store. **Resilience gotcha:** `loadTodos()` and `loadCoffeeBeans()` both
+   retry once, unauthenticated, on a 401 — an expired/bad token must only
+   break the write path (add/complete/recategorize), never the read-only
+   viewing experience across other devices. Keep that fallback if you touch
+   either function. This pattern is the right fit *only* when the panel
+   genuinely needs add/edit/move from the dashboard itself — for anything
+   append-only, pattern 2 (Issue form) is simpler and needs no client-side
+   token at all.
+   - **Todos:** each task = one issue (open=active, closed=done), tagged
+     `todo` + `category:<x>`. Add = `POST /issues`. Complete = `PATCH
+     /issues/{n}` with `state:closed`.
+   - **Coffee:** each bean = one issue (always left open — a bean doesn't
+     "complete"), tagged `coffee-bean` + `blend:specialty` or
+     `blend:house`. New beans always come in via the
+     `coffee-bean.yml` issue form (richer fields than a quick client-side
+     add — name, roaster, origin, dose/yield/time, notes, and an image
+     dragged into the form's body, which GitHub auto-hosts and which
+     `extractImageUrl()` pulls out of the issue body via regex on the
+     rendered markdown `![...](url)`). Recategorizing (drag between
+     Specialty/House on the panel) is the only client-side write, via
+     `PATCH /issues/{n}` — and it **replaces the full labels array**
+     (`[coffee-bean, blend:<target>]`), not an additive patch, because
+     GitHub's API has no "add/remove one label" verb on this endpoint.
+     That's fine only because bean issues are constructed to carry
+     exactly these two labels and nothing else — never add a third label
+     to a bean issue expecting it to survive a drag.
 
 **Frontend:** everything lives in one `index.html` — CSS custom properties
 in `:root` define the whole design system (colors, fonts). New panels must
@@ -129,6 +150,37 @@ UI never waits on the network. If that PATCH fails, it alerts and calls
 `loadTodos()` to reconcile with reality rather than trusting the optimistic
 state. Keep this order (animate → mutate local state → network) if you
 touch this code; don't make it synchronous again.
+
+**Coffee panel (bean catalog, replaced the old brew-journal concept
+entirely — don't resurrect "log a brew"):** two drag-and-drop grids,
+Specialty Blend and House Blend, plus a `coffee-setup` spec row at top read
+from `data/coffee-setup.json` (a small hand-edited array of `{label,
+value}` — machine, grinder, water, whatever gear is worth showing; edit
+that file directly, it's not wired to any Action or issue form since it
+changes rarely). Bean data comes from GitHub Issues, see Architecture
+pattern 3. A few things worth knowing before touching this:
+- **Drag-and-drop is hand-rolled on Pointer Events, not native HTML5
+  DnD.** The `draggable` attribute's DnD API does not work reliably on iOS
+  Safari touch — this is a real device constraint, not a style choice.
+  `attachBeanCardHandlers()` in `index.html` tracks `pointerdown` →
+  `pointermove` (crosses a ~10px threshold before it counts as a drag,
+  otherwise a plain tap opens the detail modal) → `pointerup`
+  (`elementFromPoint` under the pointer, with the dragged card's own
+  `pointer-events` set to `none` for that one lookup so it doesn't occlude
+  itself, decides which `.bean-grid` it was dropped on). Keep this
+  approach for any future drag interaction in this app — don't swap in
+  native `draggable` and assume it'll work on the iPad.
+- **Card face vs. detail modal:** the card shows name/roaster/recipe only;
+  tapping opens `#bean-modal-backdrop` with the full image, origin, the
+  dose/yield/time plus an auto-computed ratio (`ratioString()` — never ask
+  the user to type a ratio, derive it), and notes. Keep that split — don't
+  cram everything onto the card face.
+- **Images are never uploaded by this codebase.** There's no upload
+  endpoint. A bean's image is whatever GitHub-hosted URL shows up in the
+  issue body (the owner drags a photo into the issue form's Image field on
+  github.com and GitHub auto-hosts it); `extractImageUrl()` just regexes
+  the first markdown image link out of the body. No image present → the
+  card/modal shows the plain cup-icon placeholder, not a broken `<img>`.
 
 **Personality details (deliberate, keep consistent on new panels):**
 - Two Google Fonts loaded in `<head>`: `Newsreader` (the `--display`
@@ -220,12 +272,14 @@ Strava/IBKR data assuming the URL is obscure enough — it isn't.
   stale data, not an error, since there's no "last updated" staleness check
   yet. This is a known gap, not a design choice — flag it to the owner if
   building a panel where stale-but-silent is actually risky (e.g. stocks).
-- **Empty data (no entries logged yet):** established pattern (see Coffee) —
-  explicit empty-state copy ("No entries yet — log one via the [X] issue"),
-  not a blank panel. New manual-log panels should match this.
+- **Empty data (no entries logged yet):** established pattern (see Coffee's
+  bean grids, Todos' category lists) — explicit empty-state copy ("No beans
+  yet — add one via the [X] issue"), not a blank panel. New panels should
+  match this.
 - **Issue-form optional field left blank:** GitHub renders `_No response_`
-  in the body; the parser must map that to `''`, not the literal string (see
-  `log_coffee.py` for the pattern).
+  in the body; any body parser must map that to `''`, not the literal
+  string (see `parseIssueField()` in `index.html`, used by the Coffee
+  panel, for the client-side JS version of this same rule).
 - **GitHub Actions minutes:** Free tier is 2,000 min/month. Weather at every
   15 min is trivial cost (~seconds per run). Before adding a high-frequency
   cron (e.g. Stocks every 5 min during market hours), do the rough math
@@ -250,6 +304,11 @@ Strava/IBKR data assuming the URL is obscure enough — it isn't.
   wire these to fake/hardcoded data; they stay honest empty states until a
   real source is picked. (Today tile is resolved — see Home panel note
   above.)
+- **Coffee setup specs and initial beans:** `data/coffee-setup.json` ships
+  as an empty array and no bean issues exist yet — both need real content
+  from the owner (gear list; bean name/roaster/recipe/image per bean via
+  the issue form). Don't invent placeholder gear or beans into the live
+  data — ask, same as any other empty-state panel.
 - **Aspirational domains still open (board games, stats-flavored content):**
   these came out of a design-personality brief, not a build request. Accent
   tokens are reserved (see design system note above) but no panel, data

@@ -1,0 +1,61 @@
+name: Add a coffee bean
+description: Add a bean to the Coffee panel's Specialty/House catalog. New beans start under Specialty Blend — drag to House Blend on the panel if that's where it belongs.
+title: "Coffee bean"
+labels: ["coffee-bean", "blend:specialty"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Bean Name
+      placeholder: "Ethiopia Chelbesa"
+    validations:
+      required: true
+  - type: input
+    id: roaster
+    attributes:
+      label: Roaster / Cafe
+      placeholder: "Market Lane"
+    validations:
+      required: true
+  - type: input
+    id: origin
+    attributes:
+      label: Origin
+      placeholder: "Ethiopia, Guji"
+    validations:
+      required: false
+  - type: input
+    id: dose
+    attributes:
+      label: Dose
+      placeholder: "18g"
+    validations:
+      required: true
+  - type: input
+    id: yield
+    attributes:
+      label: Yield
+      placeholder: "36g"
+    validations:
+      required: true
+  - type: input
+    id: time
+    attributes:
+      label: Time
+      placeholder: "28s"
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      placeholder: "Tasting notes, grind setting, anything worth remembering"
+    validations:
+      required: false
+  - type: textarea
+    id: image
+    attributes:
+      label: Image
+      description: "Drag or paste a photo of the bag/beans here — GitHub uploads it automatically and inserts the link. Leave blank if you don't have one yet."
+    validations:
+      required: false

@@ -1,14 +1,15 @@
 # Panel — personal iPad dashboard
 
 A swipeable, always-on dashboard. One horizontal-scroll page, eight
-full-screen sections (home, todos, weather, running, workouts, fitness,
-coffee, stocks), tap-to-talk voice navigation, installable as a home-screen
+full-screen sections (home, todos, coffee, weather, running, workouts,
+fitness, stocks), tap-to-talk voice navigation, installable as a home-screen
 app on the iPad.
 
-**Status:** Home (summary front page), Todos, and Weather are live (Weather
-from Open-Meteo, no API key). Coffee is live — log a brew via a GitHub Issue
-and it shows up on the panel. The other four panels are stubbed with a note
-on what data source they need — see the roadmap at the bottom.
+**Status:** Home (summary front page), Todos, Coffee, and Weather are live
+(Weather from Open-Meteo, no API key). Coffee is a drag-and-drop bean
+catalog — Specialty Blend / House Blend, add beans via a GitHub Issue form,
+recategorize by dragging on the panel. The other four panels are stubbed
+with a note on what data source they need — see the roadmap at the bottom.
 
 ## 1. Push this to your own GitHub repo
 
@@ -71,11 +72,12 @@ Two layers, because iOS won't let a web page listen in the background:
   Now "Hey Siri, show my stocks" opens straight to that panel — the `#name`
   hash routing is already built into `index.html`.
 
-## 6. Connect Todos so you can add/check off tasks
+## 6. Connect Todos & Coffee so you can add/edit things
 
-Viewing the Todos panel needs nothing — it reads GitHub Issues from the
-public repo directly. **Adding or completing a task needs a token**, once
-per device (iPad, phone, laptop — wherever you'll actually add tasks from):
+Viewing either panel needs nothing — both read GitHub Issues from the
+public repo directly. **Adding a task, checking one off, or dragging a bean
+between blends needs a token**, once per device (iPad, phone, laptop —
+wherever you'll actually use these from). One token covers both panels.
 
 1. On GitHub: **Settings → Developer settings → Personal access tokens →
    Fine-grained tokens → Generate new token**.
@@ -85,16 +87,39 @@ per device (iPad, phone, laptop — wherever you'll actually add tasks from):
    *Read and write*. Leave everything else at *No access*.
 4. Set an expiration (a year is fine for a personal, single-repo token) and
    generate it. Copy the token — GitHub only shows it once.
-5. On the device, tap **connect** next to the TODOS label (or just tap any
-   checkbox/add field — it'll prompt automatically) and paste the token in.
-   It's saved in that device's browser storage only; you'll do this once per
-   device, not once per session.
+5. On the device, tap **connect** next to either the TODOS or COFFEE label
+   (or just tap any checkbox/add field/bean — it'll prompt automatically)
+   and paste the token in. It's saved in that device's browser storage
+   only, shared between both panels; you'll do this once per device, not
+   once per session.
 
 Why fine-grained and scoped this tightly: the token lives in browser
 storage on a personal device, not a vetted secrets manager, so it's worth
 limiting what it can touch if that device is ever lost or compromised — it
 can only open/close issues on this one repo, nothing else on your GitHub
 account.
+
+## 7. Add coffee beans and your setup specs
+
+**Adding a bean:** open a new issue on the repo using the *Add a coffee
+bean* template (or the direct link the Coffee panel shows when a blend is
+empty). Fill in name, roaster, origin, dose/yield/time, notes, and — if you
+want a photo on the card — drag or paste an image into the Image field;
+GitHub hosts it automatically and the panel picks it up. New beans start
+under Specialty Blend; drag the card to House Blend on the panel afterward
+if that's where it belongs (needs the token from step 6).
+
+**Setup specs** (the row at the top of the Coffee panel — machine, grinder,
+whatever gear you want shown) live in `data/coffee-setup.json`, a plain
+array you (or I, on request) hand-edit — it's not wired to an Action since
+it barely ever changes:
+
+```json
+[
+  { "label": "Machine", "value": "..." },
+  { "label": "Grinder", "value": "..." }
+]
+```
 
 ## Roadmap — wiring up the remaining panels
 
@@ -111,10 +136,6 @@ in `index.html` mirroring `loadWeather()`.
 
 Home's Headlines/Stocks tiles are also unwired — same rule, pick a
 source before building. (Today is done — it mirrors the Todos panel.)
-Coffee is done: it's a GitHub Issue form
-(`.github/ISSUE_TEMPLATE/coffee-log.yml`) → `scripts/log_coffee.py` →
-`data/coffee.json`. To log a brew, open a new issue from that template on
-the repo; it appends to the log and shows up on the panel within a minute.
 
 Say the word and I'll build the next panel end-to-end (Action + JSON schema +
-render function) the same way weather and coffee were done.
+render function) the same way Weather was done.
