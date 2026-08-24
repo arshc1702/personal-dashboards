@@ -29,9 +29,10 @@
     --c-fitness:#B3667A;
     --c-coffee:#A9713F;
     --c-stocks:#5A5FA6;
-    /* reserved for future panels */
     --c-padel:#5C7FA6;
     --c-productivity:#8571A6;
+    --c-lifeadmin:#BC7A5C;
+    /* reserved for future panels */
     --c-boardgames:#C08A3E;
     --c-stats:#5A5FA6;
 
@@ -137,6 +138,17 @@
   .stat .k{ font-family:var(--mono); font-size:11px; letter-spacing:.1em; color:var(--faint); text-transform:uppercase; }
   .stat .v{ font-family:var(--mono); font-size:20px; color:var(--text); margin-top:5px; }
 
+  /* weather hourly trend strip — understated bar sparkline, not a "chart" */
+  .hourly-strip{
+    display:flex; gap:4px; margin-top:18px; padding-top:16px;
+    border-top:1px solid var(--border);
+  }
+  .hourly-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:7px; }
+  .hourly-item .hr{ font-family:var(--mono); font-size:10px; color:var(--faint); }
+  .hourly-bar-wrap{ height:34px; display:flex; align-items:flex-end; }
+  .hourly-bar{ width:5px; border-radius:2.5px; background:var(--c-weather); opacity:.3; }
+  .hourly-item .t{ font-family:var(--mono); font-size:12px; color:var(--text); }
+
   .empty{
     flex:1; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:8px;
   }
@@ -162,14 +174,8 @@
   }
   .home-grid .card{ padding:20px; display:flex; flex-direction:column; gap:16px; min-height:0; overflow:hidden; }
   .card-label{ font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); }
-  .task-row{ display:flex; align-items:flex-start; gap:10px; }
-  .task-box{ width:14px; height:14px; border-radius:3px; border:1px solid var(--faint); margin-top:2px; flex-shrink:0; }
-  .task-row.done .task-box{ background:var(--faint); }
-  .task-row span{ font-size:15px; color:var(--text); }
-  .task-row.done span{ color:var(--faint); text-decoration:line-through; }
 
   .lead{ font-family:var(--display); font-size:23px; line-height:1.3; font-weight:500; color:var(--text); }
-  .ring-wrap{ display:flex; align-items:center; gap:12px; }
   .lead-tag{ font-family:var(--mono); font-size:11px; color:var(--faint); margin-top:6px; }
   .headline{ font-size:15px; color:var(--text); line-height:1.35; }
   .headline-tag{ font-family:var(--mono); font-size:11px; color:var(--faint); margin-top:3px; }
@@ -178,6 +184,74 @@
   .ticker-row .sym{ color:var(--text); }
   .ticker-row .chg.up{ color:var(--c-running); }
   .ticker-row .chg.down{ color:var(--c-fitness); }
+
+  /* TODOS panel */
+  .connect-link{
+    font-family:var(--mono); font-size:11px; letter-spacing:.05em; text-transform:none;
+    color:var(--faint); text-decoration:underline; cursor:pointer; margin-left:6px;
+  }
+  .todos-grid{
+    flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:18px; min-height:0;
+  }
+  .todo-card{ padding:20px; display:flex; flex-direction:column; gap:16px; min-height:0; }
+  .todo-count{ color:var(--faint); font-weight:400; }
+
+  /* ledger-style add line: an underline, not a boxed field */
+  .todo-add{
+    display:flex; gap:8px; flex-shrink:0;
+    border-bottom:1px solid var(--border); padding-bottom:9px;
+    transition:border-color .15s;
+  }
+  .todo-add:focus-within{ border-color:var(--accent); }
+  .todo-add input{
+    flex:1; width:100%; font-family:var(--sans); font-size:14px; color:var(--text);
+    background:transparent; border:none; outline:none; padding:2px 0;
+  }
+  .todo-add input::placeholder{ color:var(--faint); font-style:italic; }
+
+  .todo-list{ display:flex; flex-direction:column; gap:14px; overflow-y:auto; min-height:0; }
+  .todo-rest{ display:flex; flex-direction:column; gap:10px; }
+  .todo-rule{ height:1px; background:var(--border); }
+
+  .todo-row{ display:flex; align-items:flex-start; gap:10px; cursor:pointer; }
+  .todo-row span{ font-size:14px; color:var(--text); line-height:1.4; flex:1; transition:color .2s; }
+  .todo-age{ font-family:var(--mono); font-size:10px; color:var(--faint); flex:none !important; margin-top:3px; }
+  .todo-empty{ font-family:var(--mono); font-size:11px; color:var(--faint); }
+
+  /* the "next up" hero item — oldest open task, journal-entry treatment */
+  .todo-hero{ display:flex; align-items:flex-start; gap:11px; cursor:pointer; }
+  .todo-hero-body{ flex:1; }
+  .todo-hero-tag{
+    font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent);
+  }
+  .todo-hero-title{
+    font-family:var(--display); font-style:italic; font-weight:500;
+    font-size:20px; line-height:1.28; color:var(--text); margin-top:4px;
+    transition:color .2s;
+  }
+
+  /* checkbox with a hand-drawn-feeling checkmark that draws in on complete */
+  .check{
+    width:17px; height:17px; border-radius:5px; border:1.4px solid var(--faint);
+    flex-shrink:0; margin-top:3px; display:flex; align-items:center; justify-content:center;
+    transition:background .2s, border-color .2s;
+  }
+  .todo-hero .check{ margin-top:2px; }
+  .todo-row:hover .check{ border-color:var(--accent); }
+  .check svg{ width:11px; height:11px; overflow:visible; }
+  .check svg path{
+    fill:none; stroke:#fff; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;
+    stroke-dasharray:20; stroke-dashoffset:20; transition:stroke-dashoffset .22s ease;
+  }
+  .todo-row.checking .check{ background:var(--accent); border-color:var(--accent); }
+  .todo-row.checking .check svg path{ stroke-dashoffset:0; }
+  .todo-row.checking span,
+  .todo-row.checking .todo-hero-title{ color:var(--faint); text-decoration:line-through; }
+  .todo-row.leaving{
+    opacity:0; transform:translateX(5px);
+    transition:opacity .22s ease, transform .22s ease;
+  }
 
   /* tick-dial nav */
   #dial{
@@ -234,21 +308,9 @@
 
     <div class="home-grid">
       <div class="card">
-        <div class="ring-wrap">
-          <svg width="40" height="40" viewBox="0 0 40 40" style="flex-shrink:0;">
-            <circle cx="20" cy="20" r="17" fill="none" style="stroke:var(--border)" stroke-width="3"/>
-            <circle cx="20" cy="20" r="17" fill="none" style="stroke:var(--accent)" stroke-width="3" stroke-linecap="round" stroke-dasharray="26.7 106.8" transform="rotate(-90 20 20)"/>
-          </svg>
-          <div>
-            <div class="card-label">Today</div>
-            <div style="font-family:var(--mono); font-size:12px; color:var(--faint); margin-top:2px;">1 of 4 done</div>
-          </div>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:11px;">
-          <div class="task-row"><div class="task-box"></div><span>Renew passport</span></div>
-          <div class="task-row"><div class="task-box"></div><span>Send invoice to client</span></div>
-          <div class="task-row"><div class="task-box"></div><span>Book dentist appt</span></div>
-          <div class="task-row done"><div class="task-box"></div><span>Pick up dry cleaning</span></div>
+        <div class="card-label">Today</div>
+        <div id="home-today-body" style="flex:1; min-height:0; overflow:hidden;">
+          <div style="font-family:var(--mono); font-size:12px; color:var(--faint);">Loading…</div>
         </div>
         <div style="margin-top:auto; padding-top:14px; border-top:1px solid var(--border);">
           <div class="card-label" style="color:var(--c-workouts); margin-bottom:6px;">Workout</div>
@@ -264,6 +326,36 @@
       <div class="card">
         <div class="card-label">Stocks</div>
         <div style="font-family:var(--mono); font-size:11px; color:var(--faint);">Not wired yet — data source undecided</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TODOS -->
+  <section class="panel" data-name="todos">
+    <div class="watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="m4 6 1 1 2-2"/><path d="m4 12 1 1 2-2"/><path d="m4 18 1 1 2-2"/></svg></div>
+    <div class="eyebrow">
+      <span class="label">
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="m4 6 1 1 2-2"/><path d="m4 12 1 1 2-2"/><path d="m4 18 1 1 2-2"/></svg></span>
+        <span class="status-dot" id="todos-status"></span>TODOS
+        <span class="connect-link" id="todos-connect">connect</span>
+      </span>
+      <span class="clock">--:--</span>
+    </div>
+    <div class="todos-grid">
+      <div class="card todo-card" style="--accent:var(--c-productivity)">
+        <div class="card-label" style="color:var(--c-productivity)">Work <span class="todo-count" id="todo-count-work"></span></div>
+        <form class="todo-add" data-cat="work"><input type="text" placeholder="+ add to work" maxlength="200"></form>
+        <div class="todo-list" id="todo-list-work"><div class="todo-empty">Loading…</div></div>
+      </div>
+      <div class="card todo-card" style="--accent:var(--c-padel)">
+        <div class="card-label" style="color:var(--c-padel)">Padel Club <span class="todo-count" id="todo-count-padel"></span></div>
+        <form class="todo-add" data-cat="padel"><input type="text" placeholder="+ add to padel club" maxlength="200"></form>
+        <div class="todo-list" id="todo-list-padel"><div class="todo-empty">Loading…</div></div>
+      </div>
+      <div class="card todo-card" style="--accent:var(--c-lifeadmin)">
+        <div class="card-label" style="color:var(--c-lifeadmin)">Life Admin <span class="todo-count" id="todo-count-lifeadmin"></span></div>
+        <form class="todo-add" data-cat="lifeadmin"><input type="text" placeholder="+ add to life admin" maxlength="200"></form>
+        <div class="todo-list" id="todo-list-lifeadmin"><div class="todo-empty">Loading…</div></div>
       </div>
     </div>
   </section>
@@ -288,6 +380,7 @@
       <div class="card stat"><div class="k">Humidity</div><div class="v tnum" id="w-hum">--%</div></div>
       <div class="card stat"><div class="k">Rain chance</div><div class="v tnum" id="w-rain">--%</div></div>
     </div>
+    <div class="hourly-strip" id="w-hourly"></div>
   </section>
 
   <!-- RUNNING -->
@@ -428,6 +521,22 @@ async function loadWeather(){
     document.getElementById('h-temp').textContent = Math.round(d.temp) + '°';
     document.getElementById('h-cond').textContent = d.condition + ' · Melbourne';
     document.getElementById('h-sub').textContent = `FEELS ${Math.round(d.feels_like)}° · RAIN ${Math.round(d.rain_chance)}%`;
+
+    const hourlyEl = document.getElementById('w-hourly');
+    if(hourlyEl && Array.isArray(d.hourly) && d.hourly.length){
+      const temps = d.hourly.map(h => h.temp);
+      const lo = Math.min(...temps), hi = Math.max(...temps);
+      const range = hi - lo || 1;
+      hourlyEl.innerHTML = d.hourly.map(h => {
+        const pct = 25 + ((h.temp - lo) / range) * 75; // keep even the coldest hour visible
+        return `
+          <div class="hourly-item">
+            <span class="hr">${h.hour}</span>
+            <div class="hourly-bar-wrap"><div class="hourly-bar" style="height:${pct}%"></div></div>
+            <span class="t tnum">${Math.round(h.temp)}°</span>
+          </div>`;
+      }).join('');
+    }
   }catch(e){
     document.getElementById('w-cond').textContent = 'Data not available yet';
     document.getElementById('h-cond').textContent = 'Data not available yet';
@@ -473,6 +582,26 @@ async function loadCoffee(){
       }
       html += `</div>`;
     }
+
+    // "this month" — pure client-side arithmetic over what's already loaded, no new data source
+    const now = new Date();
+    const thisMonth = entries.filter(e => {
+      const d = new Date(e.date);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    });
+    if(thisMonth.length){
+      const rated = thisMonth.filter(e => typeof e.rating === 'number');
+      const avg = rated.length ? (rated.reduce((s,e)=>s+e.rating,0) / rated.length) : null;
+      const methodCounts = {};
+      for(const e of thisMonth){ if(e.method) methodCounts[e.method] = (methodCounts[e.method]||0) + 1; }
+      const topMethod = Object.keys(methodCounts).sort((a,b)=>methodCounts[b]-methodCounts[a])[0];
+      html += `
+        <div style="display:flex; gap:32px; padding-top:16px; margin-top:2px; border-top:1px solid var(--border);">
+          <div><div class="card-label">This month</div><div style="font-family:var(--mono); font-size:20px; color:var(--text); margin-top:4px;">${thisMonth.length}</div></div>
+          ${avg !== null ? `<div><div class="card-label">Avg rating</div><div style="font-family:var(--mono); font-size:20px; color:var(--c-coffee); margin-top:4px;">${avg.toFixed(1)}</div></div>` : ''}
+          ${topMethod ? `<div><div class="card-label">Top method</div><div style="font-family:var(--mono); font-size:20px; color:var(--text); margin-top:4px;">${escapeHtml(topMethod)}</div></div>` : ''}
+        </div>`;
+    }
     body.innerHTML = html;
   }catch(e){
     body.innerHTML = `<div class="empty" style="flex:none;"><div class="big">data not available yet</div></div>`;
@@ -481,12 +610,223 @@ async function loadCoffee(){
 loadCoffee();
 setInterval(loadCoffee, 5*60*1000);
 
+// todos data (GitHub Issues as the store — see CLAUDE.md "Interactive write" pattern)
+const GH_REPO = 'arshc1702/personal-dashboards';
+const TODO_CATEGORIES = [
+  { key:'work',      label:'category:work',       name:'work' },
+  { key:'padel',     label:'category:padel',      name:'padel club' },
+  { key:'lifeadmin', label:'category:life-admin', name:'life admin' },
+];
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function ghToken(){ return localStorage.getItem('panel_gh_token') || ''; }
+function setGhToken(t){ if(t) localStorage.setItem('panel_gh_token', t.trim()); }
+function clearGhToken(){ localStorage.removeItem('panel_gh_token'); }
+function ensureToken(){
+  let t = ghToken();
+  if(t) return t;
+  t = prompt('Paste a GitHub personal access token (fine-grained, scoped to just this repo\'s Issues: Read and write) to add or complete tasks:');
+  if(t) setGhToken(t);
+  return ghToken();
+}
+function updateTodosConnectUI(){
+  const has = !!ghToken();
+  document.getElementById('todos-status')?.classList.toggle('live', has);
+  const link = document.getElementById('todos-connect');
+  if(link) link.textContent = has ? 'connected' : 'connect';
+}
+async function ghFetch(path, options={}){
+  const token = ghToken();
+  const headers = Object.assign({'Accept':'application/vnd.github+json'}, options.headers||{});
+  if(token) headers['Authorization'] = 'Bearer ' + token;
+  return fetch(`https://api.github.com/repos/${GH_REPO}${path}`, Object.assign({}, options, {headers}));
+}
+
+let todosCache = { work:[], padel:[], lifeadmin:[] };
+
+// compact "how long it's been waiting" tag — oldest-first ordering turns this
+// into real information (what's stalest), not just decoration
+function timeAgo(iso){
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if(days < 1) return 'today';
+  if(days < 7) return days + 'd';
+  if(days < 31) return Math.floor(days/7) + 'w';
+  if(days < 365) return Math.floor(days/30) + 'mo';
+  return Math.floor(days/365) + 'y';
+}
+
+function checkSvg(){
+  return `<div class="check"><svg viewBox="0 0 16 16"><path d="M3 8.5 6.5 12 13 4.5"/></svg></div>`;
+}
+
+function renderTodosPanel(errored){
+  for(const cat of TODO_CATEGORIES){
+    const list = document.getElementById('todo-list-'+cat.key);
+    const countEl = document.getElementById('todo-count-'+cat.key);
+    if(!list) continue;
+    if(errored){ list.innerHTML = `<div class="todo-empty">Couldn't load — check connection</div>`; continue; }
+    const items = todosCache[cat.key] || [];
+    if(countEl) countEl.textContent = items.length ? `· ${items.length}` : '';
+    if(!items.length){ list.innerHTML = `<div class="todo-empty">Nothing pending</div>`; continue; }
+
+    const [hero, ...rest] = items;
+    let html = `
+      <div class="todo-row todo-hero" data-number="${hero.number}">
+        ${checkSvg()}
+        <div class="todo-hero-body">
+          <div class="todo-hero-tag">Next up · ${timeAgo(hero.created_at)}</div>
+          <div class="todo-hero-title">${escapeHtml(hero.title)}</div>
+        </div>
+      </div>`;
+    if(rest.length){
+      html += `<div class="todo-rule"></div><div class="todo-rest">`;
+      for(const issue of rest){
+        html += `
+          <div class="todo-row" data-number="${issue.number}">
+            ${checkSvg()}<span>${escapeHtml(issue.title)}</span>
+            <span class="todo-age">${timeAgo(issue.created_at)}</span>
+          </div>`;
+      }
+      html += `</div>`;
+    }
+    list.innerHTML = html;
+  }
+}
+
+function renderHomeToday(){
+  const wrap = document.getElementById('home-today-body');
+  if(!wrap) return;
+  const total = TODO_CATEGORIES.reduce((n,c)=>n+(todosCache[c.key]?.length||0), 0);
+  if(total === 0){
+    wrap.innerHTML = `<div style="font-family:var(--mono); font-size:12px; color:var(--faint);">All clear — no open tasks</div>`;
+    return;
+  }
+  const breakdown = TODO_CATEGORIES
+    .filter(c => (todosCache[c.key]||[]).length)
+    .map(c => `${todosCache[c.key].length} ${c.name}`).join(' · ');
+  // oldest-first across categories, same "what's been waiting longest" logic as the panel
+  const preview = TODO_CATEGORIES.flatMap(c => todosCache[c.key])
+    .sort((a,b) => new Date(a.created_at) - new Date(b.created_at)).slice(0, 4);
+  wrap.innerHTML = `
+    <div style="font-family:var(--mono); font-size:32px; font-weight:300; color:var(--text); line-height:1;">${total}</div>
+    <div style="font-family:var(--mono); font-size:11px; color:var(--faint); margin-top:6px;">${breakdown} open</div>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
+      ${preview.map(i => `<div style="font-size:14px; color:var(--text);">${escapeHtml(i.title)}</div>`).join('')}
+    </div>`;
+}
+
+function renderHomeTodayError(){
+  const wrap = document.getElementById('home-today-body');
+  if(wrap) wrap.innerHTML = `<div style="font-family:var(--mono); font-size:12px; color:var(--faint);">Couldn't load</div>`;
+}
+
+async function loadTodos(){
+  try{
+    let res = await ghFetch('/issues?labels=todo&state=open&per_page=100', {cache:'no-store'});
+    if(res.status === 401){
+      // token is invalid/expired — fall back to an unauthenticated read so viewing still works
+      res = await fetch(`https://api.github.com/repos/${GH_REPO}/issues?labels=todo&state=open&per_page=100`, {cache:'no-store'});
+    }
+    if(!res.ok) throw new Error('bad response');
+    const issues = await res.json();
+    const grouped = { work:[], padel:[], lifeadmin:[] };
+    for(const issue of issues){
+      if(issue.pull_request) continue;
+      const names = (issue.labels||[]).map(l => l.name);
+      const cat = TODO_CATEGORIES.find(c => names.includes(c.label));
+      if(cat) grouped[cat.key].push(issue);
+    }
+    for(const key of Object.keys(grouped)){
+      grouped[key].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+    }
+    todosCache = grouped;
+    renderTodosPanel();
+    renderHomeToday();
+  }catch(e){
+    renderTodosPanel(true);
+    renderHomeTodayError();
+  }
+}
+loadTodos();
+setInterval(loadTodos, 2*60*1000);
+updateTodosConnectUI();
+
+document.getElementById('todos-connect')?.addEventListener('click', ()=>{
+  if(ghToken()){
+    if(confirm('Disconnect this device\'s GitHub token?')){ clearGhToken(); updateTodosConnectUI(); }
+  } else {
+    ensureToken();
+    updateTodosConnectUI();
+  }
+});
+
+document.querySelectorAll('.todo-add').forEach(form=>{
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const input = form.querySelector('input');
+    const text = input.value.trim();
+    if(!text) return;
+    if(!ensureToken()){ updateTodosConnectUI(); return; }
+    updateTodosConnectUI();
+    const catDef = TODO_CATEGORIES.find(c => c.key === form.dataset.cat);
+    input.value = ''; input.disabled = true;
+    try{
+      const res = await ghFetch('/issues', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ title:text, labels:['todo', catDef.label] })
+      });
+      if(!res.ok) throw new Error('failed');
+      await loadTodos();
+    }catch(err){
+      alert('Could not add task — check your token and connection.');
+      input.value = text;
+    }finally{
+      input.disabled = false;
+    }
+  });
+});
+
+document.querySelector('.todos-grid')?.addEventListener('click', (e)=>{
+  const row = e.target.closest('.todo-row');
+  if(!row || row.classList.contains('checking')) return;
+  if(!ensureToken()){ updateTodosConnectUI(); return; }
+  updateTodosConnectUI();
+  const number = parseInt(row.dataset.number, 10);
+
+  // optimistic: play the check-off moment immediately, patch GitHub in the
+  // background, and only reconcile with a real reload if that patch fails
+  row.classList.add('checking');
+  setTimeout(()=>{
+    row.classList.add('leaving');
+    setTimeout(async ()=>{
+      for(const cat of TODO_CATEGORIES){
+        todosCache[cat.key] = (todosCache[cat.key]||[]).filter(i => i.number !== number);
+      }
+      renderTodosPanel();
+      renderHomeToday();
+      try{
+        const res = await ghFetch(`/issues/${number}`, {
+          method:'PATCH',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ state:'closed' })
+        });
+        if(!res.ok) throw new Error('failed');
+      }catch(err){
+        alert('Could not save that on GitHub — reloading to check the current state.');
+        loadTodos();
+      }
+    }, 240);
+  }, 220);
+});
+
 // voice commands
 const micBtn = document.getElementById('mic');
 const voiceLabel = document.getElementById('voiceLabel');
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const routes = {
-  home:['home','summary','overview'], weather:['weather'], running:['running','run'], workouts:['workout','workouts'],
+  home:['home','summary','overview'], todos:['todo','todos','tasks'], weather:['weather'], running:['running','run'], workouts:['workout','workouts'],
   fitness:['fitness','health'], coffee:['coffee'], stocks:['stocks','market','portfolio']
 };
 if(SR){

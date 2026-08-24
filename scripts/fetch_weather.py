@@ -25,6 +25,8 @@ URL = (
     f"?latitude={LAT}&longitude={LON}"
     "&current=temperature_2m,apparent_temperature,relative_humidity_2m,"
     "precipitation_probability,weather_code,wind_speed_10m"
+    "&hourly=temperature_2m,weather_code"
+    "&forecast_days=2"
     "&timezone=Australia%2FMelbourne"
 )
 
@@ -32,6 +34,20 @@ with urllib.request.urlopen(URL, timeout=15) as resp:
     raw = json.load(resp)
 
 c = raw["current"]
+
+# next 6 hours from the current hour, for the panel's hourly trend strip
+h = raw["hourly"]
+now_iso = c["time"]
+start = h["time"].index(now_iso) if now_iso in h["time"] else 0
+hourly = [
+    {
+        "hour": t[11:16],
+        "temp": h["temperature_2m"][i],
+        "condition": WMO_CODES.get(h["weather_code"][i], "Unknown"),
+    }
+    for i, t in enumerate(h["time"][start:start + 6], start=start)
+]
+
 out = {
     "temp": c["temperature_2m"],
     "feels_like": c["apparent_temperature"],
@@ -39,6 +55,7 @@ out = {
     "wind_kmh": c["wind_speed_10m"],
     "humidity": c["relative_humidity_2m"],
     "rain_chance": c.get("precipitation_probability", 0),
+    "hourly": hourly,
     "updated": datetime.now(timezone.utc).isoformat(),
 }
 

@@ -6,11 +6,14 @@ anything remembered from a prior chat.
 
 ## What this is
 
-An always-on personal dashboard for a spare iPad: six full-screen swipeable
-panels (Weather, Running, Workouts, Fitness, Coffee, Stocks), installed as a
-PWA, with tap-to-talk voice nav and Siri Shortcut deep-links. Single static
-site, no framework, no server. Owner does not write code — all changes are
-authored by Claude, reviewed by the owner as diffs/screenshots before pushing.
+An always-on personal dashboard for a spare iPad: full-screen swipeable
+panels (Home, Todos, Weather, Running, Workouts, Fitness, Coffee, Stocks),
+installed as a PWA, with tap-to-talk voice nav and Siri Shortcut deep-links.
+Single static site, no framework, no traditional server (Todos writes
+directly to the GitHub API from the browser — see Architecture — but there
+is still no backend Claude or the owner has to run). Owner does not write
+code — all changes are authored by Claude, reviewed by the owner as
+diffs/screenshots before pushing.
 
 **Repo:** `github.com/arshc1702/personal-dashboards` (public — see "Why
 public" below)
@@ -21,9 +24,10 @@ public" below)
 
 | Panel | Status | Data source |
 |---|---|---|
-| Home | Live (partial) | Summary/front-page panel, first in the deck. Weather tile is live; tasks/workout/headlines/stocks tiles are honest empty states until those sources exist |
-| Weather | Live | Open-Meteo, no auth, Action every 15 min |
-| Coffee | Live | GitHub Issue form → Action parses → `data/coffee.json` |
+| Home | Live (partial) | Summary/front-page panel, first in the deck. Weather tile and Today (todos) tile are both live; workout/headlines/stocks tiles are honest empty states until those sources exist |
+| Todos | Live | GitHub Issues, read live client-side + written directly from the panel via an on-device token — see Architecture pattern 3 |
+| Weather | Live | Open-Meteo, no auth, Action every 15 min. Also carries a 6-hour hourly forecast (`data.hourly`) for the panel's trend strip |
+| Coffee | Live | GitHub Issue form → Action parses → `data/coffee.json`. Panel also computes a "this month" stat rail (count/avg rating/top method) client-side from the same array — no new data source |
 | Running | Not built | Strava API — needs OAuth app registration |
 | Stocks | Not built | IBKR web API or a free quote feed — needs credentials |
 | Workouts | Not built | No tracker exists — likely same issue-form pattern as Coffee |
@@ -34,8 +38,8 @@ owner hasn't done the physical setup yet. Don't assume it's done.
 
 ## Architecture
 
-**Two ingestion patterns are established — use one of these, don't invent a
-third without discussing it first:**
+**Three ingestion patterns are established — use one of these, don't invent
+a fourth without discussing it first:**
 
 1. **Scheduled pull** (Weather, and planned for Running/Stocks): a GitHub
    Action on a cron writes `data/<panel>.json`. Frontend fetches that file
@@ -49,6 +53,28 @@ third without discussing it first:**
    characters that break shell escaping), appends to the JSON, closes the
    issue. See `.github/workflows/log-coffee.yml` +
    `scripts/log_coffee.py` as the template.
+3. **Interactive write via GitHub Issues + on-device token** (Todos — the
+   only bidirectional/interactive panel so far): each task is a GitHub Issue
+   (open = active, closed = done), tagged with the universal `todo` label
+   plus one `category:<x>` label. Reads (`GET /issues?labels=todo`) are
+   unauthenticated — the repo is public, so any device can view the panel
+   with zero setup. Writes (add task = `POST /issues`, complete = `PATCH
+   /issues/{n}` with `state:closed`) go straight from browser JS to
+   `api.github.com`, authenticated with a personal access token the owner
+   pastes in once per device (`prompt()`-based `ensureToken()` flow in
+   `index.html`, stored in that device's `localStorage` under
+   `panel_gh_token` — **never** committed anywhere). **Security posture:**
+   only ever tell the owner to use a **fine-grained PAT scoped to just this
+   one repo, Issues: Read and write permission only** — never a classic PAT
+   with broad `repo` scope, since the token lives in browser storage on a
+   personal device, not a vetted secrets store. **Resilience gotcha:**
+   `loadTodos()` in `index.html` retries once, unauthenticated, on a 401 —
+   an expired/bad token must only break the write path (add/complete),
+   never the read-only viewing experience across other devices. Keep that
+   fallback if you touch this code. This pattern is the right fit *only*
+   when the panel genuinely needs add/edit/complete from the dashboard
+   itself — for anything append-only, pattern 2 (Issue form) is simpler and
+   needs no client-side token at all.
 
 **Frontend:** everything lives in one `index.html` — CSS custom properties
 in `:root` define the whole design system (colors, fonts). New panels must
@@ -61,25 +87,48 @@ dashboard deliberately moved off the original dark instrument-panel look to
 a light/warm palette — `--bg`/`--surface`/`--border`/`--text`/`--muted`/
 `--faint` for the neutrals, `--accent` as the primary muted-green system
 accent, and one `--c-<domain>` hex per subject area (weather, running,
-workouts, fitness, coffee, stocks). Content sits in `.card` blocks (white
-surface, subtle border, soft shadow, `--radius`) rather than bare full-bleed
-panels. A handful of accent tokens are **reserved but unused** —
-`--c-padel`, `--c-productivity`, `--c-boardgames`, `--c-stats` — for
-domains the owner wants eventually (padel, projects/productivity, board
-games, stats-flavored content) but that have no data source yet. Reuse a
-reserved token when one of those panels finally gets built rather than
-inventing a new hex; don't build the panel itself until its data source is
-decided (see "Open questions" below). Keep to this palette family for
-anything new — no gradients, minimal animation (the pulsing status dot is
-about the ceiling), thin single-weight stroke SVG icons (no emoji) per
-panel eyebrow.
+workouts, fitness, coffee, stocks, plus `--c-padel`/`--c-productivity`/
+`--c-lifeadmin` for the Todos categories). Content sits in `.card` blocks
+(white surface, subtle border, soft shadow, `--radius`) rather than bare
+full-bleed panels. `--c-boardgames` and `--c-stats` are still **reserved
+but unused** — for a future dedicated board-games panel and
+stats/analytics-flavored content respectively. Note `--c-padel` and
+`--c-productivity` are now in use by Todos' category labels, but that's
+*not* the same as a dedicated Padel or Productivity panel existing — if
+the owner later wants a real padel-match-tracking panel (scores, opponents,
+etc.) or a projects panel, that's still new scope, reuse the same token,
+don't invent a new hex. Keep to this palette family for anything new — no
+gradients, minimal animation (the pulsing status dot is about the ceiling),
+thin single-weight stroke SVG icons (no emoji) per panel eyebrow.
 
 **Home panel:** first panel in the deck (`data-name="home"`), an editorial
 front-page-style summary — masthead (date + live weather), then a 3-card
 row for Today/tasks+workout, Headlines, and Stocks. It's a glance layer
 only; tapping/swiping into a domain's own panel is still where the detail
 lives. Its tiles mirror whatever the domain's own panel status is — don't
-fake data in a Home tile that the domain panel itself doesn't have yet.
+fake data in a Home tile that the domain panel itself doesn't have yet. The
+Today tile is wired to the same `loadTodos()` data as the Todos panel
+(total open count + a short preview, not a completion ring — there's no
+"due today" concept in the Issues-backed model, so don't reintroduce one
+without a real due-date field); the Workout sub-section stays an honest
+empty state until a workout-plan source exists.
+
+**Todos panel's "ledger" pattern (deliberate, keep on new categories):**
+each category card shows its **oldest open issue as a "Next up" hero**
+(`.todo-hero`, Newsreader italic, a `NEXT UP · <age>` mono tag in the
+category accent) and the rest as a compact list below a hairline — sorted
+oldest-first, so hierarchy reflects a real signal (what's been waiting
+longest), not arbitrary emphasis. Every row carries a `timeAgo(created_at)`
+age tag for the same reason. The add-field is a ledger-style underline
+(`.todo-add`, transparent background, border-bottom only), not a boxed
+input — matches the journal/editorial voice, don't revert to a boxed field.
+Completing a task is optimistic: `.checking` plays a drawn-in checkmark +
+strikethrough (~220ms), `.leaving` fades the row out (~240ms), *then* the
+local cache is updated and the GitHub PATCH fires in the background — the
+UI never waits on the network. If that PATCH fails, it alerts and calls
+`loadTodos()` to reconcile with reality rather than trusting the optimistic
+state. Keep this order (animate → mutate local state → network) if you
+touch this code; don't make it synchronous again.
 
 **Personality details (deliberate, keep consistent on new panels):**
 - Two Google Fonts loaded in `<head>`: `Newsreader` (the `--display`
@@ -109,6 +158,22 @@ fake data in a Home tile that the domain panel itself doesn't have yet.
   away from: no gradients, no left-border-accent cards, no emoji as
   icons (SVG stroke icons only), minimal animation (the pulsing
   status-dot on live panels is about the ceiling).
+- **On design inspiration from templates (Notion, dashboard galleries,
+  etc.):** the owner may point at these for ideas — treat them as a source
+  of *structural* widget idioms (stat tiles, progress rings, activity
+  heatmaps, sparklines) worth translating, never a look to copy wholesale.
+  Redraw everything in this system's own tokens/typography (serif+mono,
+  warm neutrals, thin stroke icons). Do not adopt pastel gradients, photo
+  collages, or dense cutesy widget grids just because a referenced
+  template uses them — that's the "generic Notion clone" this dashboard
+  was explicitly built to not be.
+- **Mocking panels that have no data source yet:** don't put fabricated
+  numbers into `index.html` for an unbuilt panel — that violates the
+  "no fake data" rule for the *live* site. If a design pass is wanted for
+  those (see Running/Workouts/Fitness/Stocks precedent), build it as a
+  separate concept Artifact using the same tokens, clearly labeled as a
+  preview, and leave the live panel as an honest empty state until a real
+  source is picked.
 
 **PWA shell:** `manifest.json` + `sw.js` are already wired for
 Add-to-Home-Screen. Don't touch unless a panel needs offline behavior beyond
@@ -124,10 +189,18 @@ what's there.
   build later.
 - **Low sensitivity (weather, coffee, workouts):** no special handling
   needed.
-- **Secrets (API keys, OAuth tokens):** GitHub Encrypted Secrets
-  (`Settings → Secrets and variables → Actions`) only. Never in a committed
-  file, never in a `.env` that gets accidentally tracked — check `.gitignore`
-  covers it first.
+- **Secrets (API keys, OAuth tokens) used by Actions:** GitHub Encrypted
+  Secrets (`Settings → Secrets and variables → Actions`) only. Never in a
+  committed file, never in a `.env` that gets accidentally tracked — check
+  `.gitignore` covers it first.
+- **The Todos panel's GitHub token is different and deliberately so:** it's
+  entered client-side and lives in a specific device's browser
+  `localStorage`, never in the repo or an Action secret — it has to be
+  reachable from the browser to make authenticated write calls. Only ever
+  advise a fine-grained PAT scoped to this one repo's Issues permission
+  (see Architecture pattern 3). Don't "fix" this by trying to move it into
+  Actions secrets — that would require a server-side proxy, which is a
+  bigger architecture change to discuss first, not a drop-in swap.
 
 ## Why the repo is public, and what that means
 
@@ -172,17 +245,18 @@ Strava/IBKR data assuming the URL is obscure enough — it isn't.
   before building.
 - **Fitness:** may fully overlap with Running (activity load from Strava) or
   be a separate manual/Apple-Health-export source — ask before assuming.
-- **Home panel's Today/Headlines/Stocks tiles:** no source decided for
-  tasks, news, or the Home stocks summary either — same "ask before
-  building" rule applies. Don't wire these to fake/hardcoded data; they stay
-  honest empty states until a real source is picked.
-- **Aspirational domains (padel, productivity/projects, board games,
-  stats-flavored content):** these came out of a design-personality brief,
-  not a build request. Accent tokens are reserved (see design system note
-  above) but no panel, data source, or ingestion pattern exists — don't
-  start building one without the owner picking it explicitly, the way
-  Running/Stocks/Fitness already went through this "ask before building"
-  gate.
+- **Home panel's Headlines/Stocks tiles:** no source decided for news or
+  the Home stocks summary — same "ask before building" rule applies. Don't
+  wire these to fake/hardcoded data; they stay honest empty states until a
+  real source is picked. (Today tile is resolved — see Home panel note
+  above.)
+- **Aspirational domains still open (board games, stats-flavored content):**
+  these came out of a design-personality brief, not a build request. Accent
+  tokens are reserved (see design system note above) but no panel, data
+  source, or ingestion pattern exists — don't start building one without
+  the owner picking it explicitly. (Padel and productivity are partially
+  resolved — they exist as Todos categories now — but a dedicated
+  match-tracking/projects panel for either is still open, same gate.)
 
 ## File/deliverable conventions
 

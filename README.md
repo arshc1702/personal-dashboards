@@ -1,14 +1,14 @@
 # Panel — personal iPad dashboard
 
-A swipeable, always-on dashboard. One horizontal-scroll page, seven
-full-screen sections (home, weather, running, workouts, fitness, coffee,
-stocks), tap-to-talk voice navigation, installable as a home-screen app on
-the iPad.
+A swipeable, always-on dashboard. One horizontal-scroll page, eight
+full-screen sections (home, todos, weather, running, workouts, fitness,
+coffee, stocks), tap-to-talk voice navigation, installable as a home-screen
+app on the iPad.
 
-**Status:** Home (summary front page) and Weather are live (Weather from
-Open-Meteo, no API key). Coffee is live — log a brew via a GitHub Issue and
-it shows up on the panel. The other four panels are stubbed with a note on
-what data source they need — see the roadmap at the bottom.
+**Status:** Home (summary front page), Todos, and Weather are live (Weather
+from Open-Meteo, no API key). Coffee is live — log a brew via a GitHub Issue
+and it shows up on the panel. The other four panels are stubbed with a note
+on what data source they need — see the roadmap at the bottom.
 
 ## 1. Push this to your own GitHub repo
 
@@ -66,10 +66,35 @@ Two layers, because iOS won't let a web page listen in the background:
   **Shortcuts** app, create one shortcut per panel:
   - Action: *Open URLs* → `https://<you>.github.io/panel/#stocks`
   - Add a custom Siri phrase, e.g. "Show my stocks"
-  - Repeat for `#home`, `#weather`, `#running`, `#workouts`, `#fitness`, `#coffee`
+  - Repeat for `#home`, `#todos`, `#weather`, `#running`, `#workouts`, `#fitness`, `#coffee`
 
   Now "Hey Siri, show my stocks" opens straight to that panel — the `#name`
   hash routing is already built into `index.html`.
+
+## 6. Connect Todos so you can add/check off tasks
+
+Viewing the Todos panel needs nothing — it reads GitHub Issues from the
+public repo directly. **Adding or completing a task needs a token**, once
+per device (iPad, phone, laptop — wherever you'll actually add tasks from):
+
+1. On GitHub: **Settings → Developer settings → Personal access tokens →
+   Fine-grained tokens → Generate new token**.
+2. **Repository access** → *Only select repositories* → pick
+   `personal-dashboards`. Don't grant access to any other repo.
+3. **Permissions → Repository permissions → Issues** → set to
+   *Read and write*. Leave everything else at *No access*.
+4. Set an expiration (a year is fine for a personal, single-repo token) and
+   generate it. Copy the token — GitHub only shows it once.
+5. On the device, tap **connect** next to the TODOS label (or just tap any
+   checkbox/add field — it'll prompt automatically) and paste the token in.
+   It's saved in that device's browser storage only; you'll do this once per
+   device, not once per session.
+
+Why fine-grained and scoped this tightly: the token lives in browser
+storage on a personal device, not a vetted secrets manager, so it's worth
+limiting what it can touch if that device is ever lost or compromised — it
+can only open/close issues on this one repo, nothing else on your GitHub
+account.
 
 ## Roadmap — wiring up the remaining panels
 
@@ -84,8 +109,9 @@ in `index.html` mirroring `loadWeather()`.
 | Workouts | `data/workouts.json`, hand-edited or Siri Shortcut → GitHub API commit | No existing tracker — this file *is* the tracker |
 | Fitness | Strava (load/recovery) or an Apple Health export | Decide scope once running is wired up — may overlap |
 
-Home's Today/Headlines/Stocks tiles are also unwired — same rule, pick a
-source before building. Coffee is done: it's a GitHub Issue form
+Home's Headlines/Stocks tiles are also unwired — same rule, pick a
+source before building. (Today is done — it mirrors the Todos panel.)
+Coffee is done: it's a GitHub Issue form
 (`.github/ISSUE_TEMPLATE/coffee-log.yml`) → `scripts/log_coffee.py` →
 `data/coffee.json`. To log a brew, open a new issue from that template on
 the repo; it appends to the log and shows up on the panel within a minute.
