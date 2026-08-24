@@ -1,9 +1,9 @@
 {
-  "temp": 16,
-  "feels_like": 14,
-  "condition": "Waiting for first Action run…",
-  "wind_kmh": 0,
-  "humidity": 0,
+  "temp": 15.0,
+  "feels_like": 13.6,
+  "condition": "Overcast",
+  "wind_kmh": 7.9,
+  "humidity": 69,
   "rain_chance": 0,
-  "updated": null
+  "updated": "2026-08-24T08:09:09.649356+00:00"
 }
