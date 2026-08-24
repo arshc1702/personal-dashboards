@@ -1,0 +1,51 @@
+name: Log a coffee
+description: Record a brew for the Coffee panel
+title: "Coffee log"
+labels: ["coffee-log"]
+body:
+  - type: input
+    id: bean
+    attributes:
+      label: Bean / Roaster
+      placeholder: "Onyx Coffee Lab — Geometry"
+    validations:
+      required: true
+  - type: input
+    id: origin
+    attributes:
+      label: Origin
+      placeholder: "Ethiopia, Guji"
+    validations:
+      required: false
+  - type: dropdown
+    id: method
+    attributes:
+      label: Brew Method
+      options:
+        - Espresso
+        - V60
+        - Aeropress
+        - French Press
+        - Moka Pot
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: rating
+    attributes:
+      label: Rating
+      options:
+        - "5"
+        - "4"
+        - "3"
+        - "2"
+        - "1"
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      placeholder: "Tasting notes, grind size, anything worth remembering"
+    validations:
+      required: false

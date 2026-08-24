@@ -21,6 +21,7 @@ public" below)
 
 | Panel | Status | Data source |
 |---|---|---|
+| Home | Live (partial) | Summary/front-page panel, first in the deck. Weather tile is live; tasks/workout/headlines/stocks tiles are honest empty states until those sources exist |
 | Weather | Live | Open-Meteo, no auth, Action every 15 min |
 | Coffee | Live | GitHub Issue form → Action parses → `data/coffee.json` |
 | Running | Not built | Strava API — needs OAuth app registration |
@@ -54,6 +55,60 @@ in `:root` define the whole design system (colors, fonts). New panels must
 reuse these tokens, not introduce new hex values. Panel nav is a horizontal
 scroll-snap deck; `#panel-name` hash routing already supports Siri Shortcut
 deep-links — reuse it, don't build new routing.
+
+**Design system (light, warm, "premium personal command centre"):** the
+dashboard deliberately moved off the original dark instrument-panel look to
+a light/warm palette — `--bg`/`--surface`/`--border`/`--text`/`--muted`/
+`--faint` for the neutrals, `--accent` as the primary muted-green system
+accent, and one `--c-<domain>` hex per subject area (weather, running,
+workouts, fitness, coffee, stocks). Content sits in `.card` blocks (white
+surface, subtle border, soft shadow, `--radius`) rather than bare full-bleed
+panels. A handful of accent tokens are **reserved but unused** —
+`--c-padel`, `--c-productivity`, `--c-boardgames`, `--c-stats` — for
+domains the owner wants eventually (padel, projects/productivity, board
+games, stats-flavored content) but that have no data source yet. Reuse a
+reserved token when one of those panels finally gets built rather than
+inventing a new hex; don't build the panel itself until its data source is
+decided (see "Open questions" below). Keep to this palette family for
+anything new — no gradients, minimal animation (the pulsing status dot is
+about the ceiling), thin single-weight stroke SVG icons (no emoji) per
+panel eyebrow.
+
+**Home panel:** first panel in the deck (`data-name="home"`), an editorial
+front-page-style summary — masthead (date + live weather), then a 3-card
+row for Today/tasks+workout, Headlines, and Stocks. It's a glance layer
+only; tapping/swiping into a domain's own panel is still where the detail
+lives. Its tiles mirror whatever the domain's own panel status is — don't
+fake data in a Home tile that the domain panel itself doesn't have yet.
+
+**Personality details (deliberate, keep consistent on new panels):**
+- Two Google Fonts loaded in `<head>`: `Newsreader` (the `--display`
+  token — italic serif for headline moments: masthead date, weather
+  condition text, coffee bean names, Home's lead headline) and
+  `IBM Plex Mono` (front of the `--mono` stack). Data/labels stay mono;
+  editorial/journal moments get the serif. Don't add a third typeface.
+- Every panel eyebrow icon sits in a `.badge` — a small circle tinted at
+  15% of that panel's accent color (`color-mix(in srgb, var(--accent)
+  15%, transparent)`), not a bare icon. New panels should follow this.
+- Every panel has a large (300px), very low-opacity (~10%) ghost-icon
+  `.watermark` — same icon as the badge, vertically centered on the
+  right edge — so empty/not-wired panels read as designed negative
+  space rather than blank. **Gotcha:** `.panel` needs `position:relative`
+  *and* `z-index:0` together, or the watermark's `z-index:-1` escapes to
+  a stacking context above `.panel` and renders behind the panel's own
+  background (invisible). Don't drop the `z-index:0`.
+- `.panel` has a faint dot-grid background (`radial-gradient(var(--border)
+  1px, transparent 1px)`) — a graph-paper nod to the "statistician who
+  loves data" personality brief. Keep it subtle; it's texture, not a
+  focal element.
+- The Home "Today" card has an SVG ring showing task completion
+  (`stroke-dasharray` trick, `--accent` colored). If task data becomes
+  real, recompute the dasharray from the real fraction rather than
+  hardcoding.
+- Avoid the generic-AI-dashboard tropes this system deliberately steered
+  away from: no gradients, no left-border-accent cards, no emoji as
+  icons (SVG stroke icons only), minimal animation (the pulsing
+  status-dot on live panels is about the ceiling).
 
 **PWA shell:** `manifest.json` + `sw.js` are already wired for
 Add-to-Home-Screen. Don't touch unless a panel needs offline behavior beyond
@@ -117,6 +172,17 @@ Strava/IBKR data assuming the URL is obscure enough — it isn't.
   before building.
 - **Fitness:** may fully overlap with Running (activity load from Strava) or
   be a separate manual/Apple-Health-export source — ask before assuming.
+- **Home panel's Today/Headlines/Stocks tiles:** no source decided for
+  tasks, news, or the Home stocks summary either — same "ask before
+  building" rule applies. Don't wire these to fake/hardcoded data; they stay
+  honest empty states until a real source is picked.
+- **Aspirational domains (padel, productivity/projects, board games,
+  stats-flavored content):** these came out of a design-personality brief,
+  not a build request. Accent tokens are reserved (see design system note
+  above) but no panel, data source, or ingestion pattern exists — don't
+  start building one without the owner picking it explicitly, the way
+  Running/Stocks/Fitness already went through this "ask before building"
+  gate.
 
 ## File/deliverable conventions
 

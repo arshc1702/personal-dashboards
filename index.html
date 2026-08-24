@@ -6,37 +6,51 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Panel">
-<meta name="theme-color" content="#0B0E11">
+<meta name="theme-color" content="#FAF8F4">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
 <title>Panel</title>
 <style>
   :root{
-    --ink:#0B0E11;
-    --surface:#12161A;
-    --hairline:#242A30;
-    --text:#E8ECEF;
-    --muted:#8A939B;
-    --faint:#4B5359;
+    --bg:#FAF8F4;
+    --surface:#FFFFFF;
+    --border:#E8E2D6;
+    --text:#2B2620;
+    --muted:#8A8177;
+    --faint:#B7AFA3;
+    --accent:#6E8C6A;
 
-    --c-weather:#6FA8C9;
-    --c-running:#C2703F;
-    --c-stocks:#7FA66B;
-    --c-coffee:#B98B4E;
-    --c-workouts:#8B79B8;
-    --c-fitness:#C4586B;
+    --c-weather:#5C8AA6;
+    --c-running:#6E8C6A;
+    --c-workouts:#4E8B85;
+    --c-fitness:#B3667A;
+    --c-coffee:#A9713F;
+    --c-stocks:#5A5FA6;
+    /* reserved for future panels */
+    --c-padel:#5C7FA6;
+    --c-productivity:#8571A6;
+    --c-boardgames:#C08A3E;
+    --c-stats:#5A5FA6;
 
-    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Menlo", monospace;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", "JetBrains Mono", "Menlo", monospace;
     --sans: -apple-system, "SF Pro Text", "Inter", system-ui, sans-serif;
+    --display: "Newsreader", Georgia, "Iowan Old Style", serif;
+
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(43,38,32,.05), 0 8px 22px rgba(43,38,32,.05);
   }
 
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{
     margin:0; padding:0; width:100%; height:100%;
-    background:var(--ink); color:var(--text);
+    background:var(--bg); color:var(--text);
     font-family:var(--sans);
     overflow:hidden; position:fixed; inset:0;
   }
+  .tnum{ font-variant-numeric: tabular-nums; }
 
   #deck{
     display:flex; width:100%; height:100%;
@@ -50,28 +64,55 @@
     flex:0 0 100%; width:100%; height:100%;
     scroll-snap-align:start;
     display:flex; flex-direction:column;
-    padding: max(28px, env(safe-area-inset-top)) 28px max(24px, env(safe-area-inset-bottom));
-    position:relative;
+    padding: max(28px, env(safe-area-inset-top)) 32px max(24px, env(safe-area-inset-bottom));
+    position:relative; z-index:0;
+    background-color:var(--bg);
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+    background-size: 22px 22px;
   }
+
+  .watermark{
+    position:absolute; right:-10px; top:50%; transform:translateY(-50%);
+    width:300px; height:300px;
+    color:var(--accent); opacity:.10; z-index:-1; pointer-events:none;
+  }
+  .watermark svg{ width:100%; height:100%; }
 
   .eyebrow{
     display:flex; align-items:center; justify-content:space-between;
-    font-family:var(--mono); font-size:12px; letter-spacing:.18em;
+    font-family:var(--mono); font-size:12px; letter-spacing:.16em;
     text-transform:uppercase; color:var(--accent, var(--muted));
   }
-  .eyebrow .label{ display:flex; align-items:center; gap:8px; }
+  .eyebrow .label{ display:flex; align-items:center; gap:10px; }
+  .badge{
+    width:26px; height:26px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    background:color-mix(in srgb, var(--accent) 15%, transparent);
+    color:var(--accent);
+  }
+  .badge svg{ width:14px; height:14px; }
   .status-dot{
     width:6px; height:6px; border-radius:50%;
     background:var(--accent, var(--muted));
+    opacity:.45;
+  }
+  .status-dot.live{
+    opacity:1;
     box-shadow:0 0 0 0 var(--accent, var(--muted));
     animation:pulse 2.6s ease-out infinite;
   }
   @keyframes pulse{
-    0%{ box-shadow:0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent);}
+    0%{ box-shadow:0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent);}
     70%{ box-shadow:0 0 0 9px transparent;}
     100%{ box-shadow:0 0 0 0 transparent;}
   }
-  .clock{ color:var(--faint); }
+  .clock{ color:var(--faint); font-family:var(--mono); }
+
+  /* card */
+  .card{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); box-shadow:var(--shadow);
+  }
 
   .hero{
     flex:1; display:flex; flex-direction:column;
@@ -80,25 +121,63 @@
   }
   .hero .big{
     font-family:var(--mono); font-weight:300;
-    font-size:min(26vw, 148px); line-height:.92;
+    font-size:min(24vw, 140px); line-height:.92;
     letter-spacing:-.02em; color:var(--text);
   }
   .hero .sub{
-    font-size:18px; color:var(--muted); font-weight:400;
+    font-family:var(--display); font-style:italic;
+    font-size:19px; color:var(--muted); font-weight:400;
   }
 
   .stats{
-    display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
-    gap:14px 24px; border-top:1px solid var(--hairline); padding-top:18px;
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+    gap:14px;
   }
+  .stats .card{ padding:16px 18px; }
   .stat .k{ font-family:var(--mono); font-size:11px; letter-spacing:.1em; color:var(--faint); text-transform:uppercase; }
-  .stat .v{ font-family:var(--mono); font-size:20px; color:var(--text); margin-top:3px; }
+  .stat .v{ font-family:var(--mono); font-size:20px; color:var(--text); margin-top:5px; }
 
   .empty{
     flex:1; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:8px;
   }
-  .empty .big{ font-family:var(--mono); font-size:min(10vw,44px); color:var(--faint); font-weight:300; }
-  .empty .sub{ color:var(--faint); font-size:15px; max-width:320px; }
+  .empty .big{ font-family:var(--mono); font-size:min(9vw,40px); color:var(--faint); font-weight:300; }
+  .empty .sub{ color:var(--muted); font-size:15px; max-width:360px; line-height:1.5; }
+  .empty a{ color:var(--accent, var(--muted)); }
+
+  /* HOME panel */
+  .masthead{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    padding-bottom:18px;
+  }
+  .masthead .wordmark{ font-family:var(--mono); font-size:12px; letter-spacing:.3em; color:var(--faint); }
+  .masthead .date{ font-family:var(--display); font-size:32px; font-weight:500; color:var(--text); margin-top:6px; }
+  .masthead .wx{ display:flex; align-items:baseline; gap:10px; }
+  .masthead .wx .temp{ font-family:var(--mono); font-size:40px; font-weight:300; color:var(--c-weather); }
+  .masthead .wx .cond{ font-family:var(--display); font-style:italic; font-size:14px; color:var(--muted); }
+  .rule{ height:2px; background:var(--text); opacity:.85; }
+  .hairline{ height:1px; background:var(--border); margin-bottom:22px; }
+
+  .home-grid{
+    flex:1; display:grid; grid-template-columns: 1.15fr 1.3fr 0.85fr; gap:18px; min-height:0;
+  }
+  .home-grid .card{ padding:20px; display:flex; flex-direction:column; gap:16px; min-height:0; overflow:hidden; }
+  .card-label{ font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); }
+  .task-row{ display:flex; align-items:flex-start; gap:10px; }
+  .task-box{ width:14px; height:14px; border-radius:3px; border:1px solid var(--faint); margin-top:2px; flex-shrink:0; }
+  .task-row.done .task-box{ background:var(--faint); }
+  .task-row span{ font-size:15px; color:var(--text); }
+  .task-row.done span{ color:var(--faint); text-decoration:line-through; }
+
+  .lead{ font-family:var(--display); font-size:23px; line-height:1.3; font-weight:500; color:var(--text); }
+  .ring-wrap{ display:flex; align-items:center; gap:12px; }
+  .lead-tag{ font-family:var(--mono); font-size:11px; color:var(--faint); margin-top:6px; }
+  .headline{ font-size:15px; color:var(--text); line-height:1.35; }
+  .headline-tag{ font-family:var(--mono); font-size:11px; color:var(--faint); margin-top:3px; }
+
+  .ticker-row{ display:flex; justify-content:space-between; align-items:baseline; font-family:var(--mono); font-size:14px; }
+  .ticker-row .sym{ color:var(--text); }
+  .ticker-row .chg.up{ color:var(--c-running); }
+  .ticker-row .chg.down{ color:var(--c-fitness); }
 
   /* tick-dial nav */
   #dial{
@@ -108,24 +187,25 @@
   }
   #dial .tick{
     width:3px; height:14px; border-radius:2px;
-    background:var(--hairline);
+    background:var(--border);
     transition:background .25s, height .25s;
   }
-  #dial .tick.active{ height:20px; }
+  #dial .tick.active{ height:20px; background:var(--text); }
 
   #mic{
     position:fixed; right:18px; bottom:14px;
     width:40px; height:40px; border-radius:50%;
-    border:1px solid var(--hairline); background:var(--surface);
+    border:1px solid var(--border); background:var(--surface);
     color:var(--muted); display:flex; align-items:center; justify-content:center;
-    font-size:16px;
+    font-size:16px; box-shadow:var(--shadow);
   }
-  #mic.listening{ color:var(--ink); background:#E8ECEF; border-color:#E8ECEF; }
+  #mic.listening{ color:var(--bg); background:var(--text); border-color:var(--text); }
   #voiceLabel{
     position:fixed; right:18px; bottom:60px;
     font-family:var(--mono); font-size:11px; color:var(--muted);
-    background:var(--surface); border:1px solid var(--hairline);
+    background:var(--surface); border:1px solid var(--border);
     padding:5px 9px; border-radius:6px; opacity:0; transition:opacity .2s;
+    box-shadow:var(--shadow);
   }
 </style>
 </head>
@@ -133,27 +213,93 @@
 
 <div id="deck">
 
+  <!-- HOME -->
+  <section class="panel" data-name="home">
+    <div class="watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18h16"/><path d="M6 18a6 6 0 0 1 12 0"/><path d="M12 8v3"/><path d="M8.5 9.5 10 11"/><path d="M15.5 9.5 14 11"/></svg></div>
+    <div class="masthead">
+      <div>
+        <div class="wordmark">PANEL DAILY</div>
+        <div class="date" id="h-date">—</div>
+      </div>
+      <div class="wx">
+        <span class="temp tnum" id="h-temp">--°</span>
+        <div>
+          <div class="cond" id="h-cond">Loading conditions…</div>
+          <div class="lead-tag tnum" id="h-sub">FEELS --° · RAIN --%</div>
+        </div>
+      </div>
+    </div>
+    <div class="rule"></div>
+    <div class="hairline"></div>
+
+    <div class="home-grid">
+      <div class="card">
+        <div class="ring-wrap">
+          <svg width="40" height="40" viewBox="0 0 40 40" style="flex-shrink:0;">
+            <circle cx="20" cy="20" r="17" fill="none" style="stroke:var(--border)" stroke-width="3"/>
+            <circle cx="20" cy="20" r="17" fill="none" style="stroke:var(--accent)" stroke-width="3" stroke-linecap="round" stroke-dasharray="26.7 106.8" transform="rotate(-90 20 20)"/>
+          </svg>
+          <div>
+            <div class="card-label">Today</div>
+            <div style="font-family:var(--mono); font-size:12px; color:var(--faint); margin-top:2px;">1 of 4 done</div>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:11px;">
+          <div class="task-row"><div class="task-box"></div><span>Renew passport</span></div>
+          <div class="task-row"><div class="task-box"></div><span>Send invoice to client</span></div>
+          <div class="task-row"><div class="task-box"></div><span>Book dentist appt</span></div>
+          <div class="task-row done"><div class="task-box"></div><span>Pick up dry cleaning</span></div>
+        </div>
+        <div style="margin-top:auto; padding-top:14px; border-top:1px solid var(--border);">
+          <div class="card-label" style="color:var(--c-workouts); margin-bottom:6px;">Workout</div>
+          <div style="font-family:var(--mono); font-size:11px; color:var(--faint);">Not wired yet — needs a plan source</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Headlines</div>
+        <div style="font-family:var(--mono); font-size:11px; color:var(--faint);">Not wired yet — needs a news source</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Stocks</div>
+        <div style="font-family:var(--mono); font-size:11px; color:var(--faint);">Not wired yet — data source undecided</div>
+      </div>
+    </div>
+  </section>
+
   <!-- WEATHER -->
   <section class="panel" data-name="weather" style="--accent:var(--c-weather)">
+    <div class="watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 1 1 .9-7.9A5 5 0 0 1 17 12h.5a3.5 3.5 0 0 1 0 7H7Z"/></svg></div>
     <div class="eyebrow">
-      <span class="label"><span class="status-dot"></span>WEATHER · MELBOURNE</span>
+      <span class="label">
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 1 1 .9-7.9A5 5 0 0 1 17 12h.5a3.5 3.5 0 0 1 0 7H7Z"/></svg></span>
+        <span class="status-dot live"></span>WEATHER · MELBOURNE
+      </span>
       <span class="clock" id="clock">--:--</span>
     </div>
     <div class="hero">
-      <div class="big" id="w-temp">--°</div>
+      <div class="big tnum" id="w-temp">--°</div>
       <div class="sub" id="w-cond">Loading conditions…</div>
     </div>
     <div class="stats">
-      <div class="stat"><div class="k">Feels like</div><div class="v" id="w-feels">--°</div></div>
-      <div class="stat"><div class="k">Wind</div><div class="v" id="w-wind">-- km/h</div></div>
-      <div class="stat"><div class="k">Humidity</div><div class="v" id="w-hum">--%</div></div>
-      <div class="stat"><div class="k">Rain chance</div><div class="v" id="w-rain">--%</div></div>
+      <div class="card stat"><div class="k">Feels like</div><div class="v tnum" id="w-feels">--°</div></div>
+      <div class="card stat"><div class="k">Wind</div><div class="v tnum" id="w-wind">-- km/h</div></div>
+      <div class="card stat"><div class="k">Humidity</div><div class="v tnum" id="w-hum">--%</div></div>
+      <div class="card stat"><div class="k">Rain chance</div><div class="v tnum" id="w-rain">--%</div></div>
     </div>
   </section>
 
   <!-- RUNNING -->
   <section class="panel" data-name="running" style="--accent:var(--c-running)">
-    <div class="eyebrow"><span class="label"><span class="status-dot"></span>RUNNING · STRAVA</span><span class="clock" id="clock2">--:--</span></div>
+    <div class="watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><path d="M12 13V9"/><path d="M9 3h6"/><path d="M12 3v2"/></svg></div>
+    <div class="eyebrow">
+      <span class="label">
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><path d="M12 13V9"/><path d="M9 3h6"/><path d="M12 3v2"/></svg></span>
+        <span class="status-dot"></span>RUNNING · STRAVA
+      </span>
+      <span class="clock">--:--</span>
+    </div>
     <div class="empty">
       <div class="big">not wired yet</div>
       <div class="sub">Next build step: pull weekly distance, pace &amp; last run from Strava via a scheduled GitHub Action.</div>
@@ -162,7 +308,14 @@
 
   <!-- WORKOUTS -->
   <section class="panel" data-name="workouts" style="--accent:var(--c-workouts)">
-    <div class="eyebrow"><span class="label"><span class="status-dot"></span>WORKOUTS</span><span class="clock" id="clock3">--:--</span></div>
+    <div class="watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8v8"/><path d="M18 8v8"/><path d="M3 11v2"/><path d="M21 11v2"/><path d="M6 12h12"/></svg></div>
+    <div class="eyebrow">
+      <span class="label">
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8v8"/><path d="M18 8v8"/><path d="M3 11v2"/><path d="M21 11v2"/><path d="M6 12h12"/></svg></span>
+        <span class="status-dot"></span>WORKOUTS
+      </span>
+      <span class="clock">--:--</span>
+    </div>
     <div class="empty">
       <div class="big">not wired yet</div>
       <div class="sub">Needs a schedule source — a data/workouts.json file you (or Claude) edit, showing today's plan and this week's split.</div>
@@ -171,7 +324,14 @@
 
   <!-- FITNESS -->
   <section class="panel" data-name="fitness" style="--accent:var(--c-fitness)">
-    <div class="eyebrow"><span class="label"><span class="status-dot"></span>FITNESS</span><span class="clock" id="clock4">--:--</span></div>
+    <div class="watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h3l2 4 3-9 2 5h8"/></svg></div>
+    <div class="eyebrow">
+      <span class="label">
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h3l2 4 3-9 2 5h8"/></svg></span>
+        <span class="status-dot"></span>FITNESS
+      </span>
+      <span class="clock">--:--</span>
+    </div>
     <div class="empty">
       <div class="big">not wired yet</div>
       <div class="sub">Candidate sources: Strava (activity load), Apple Health export, or a manual weight/metrics log.</div>
@@ -180,16 +340,31 @@
 
   <!-- COFFEE -->
   <section class="panel" data-name="coffee" style="--accent:var(--c-coffee)">
-    <div class="eyebrow"><span class="label"><span class="status-dot"></span>COFFEE</span><span class="clock" id="clock5">--:--</span></div>
-    <div class="empty">
-      <div class="big">not wired yet</div>
-      <div class="sub">No tracker exists yet — proposal: a tiny data/coffee.json log (bean, brew method, rating) you update by voice or a quick form.</div>
+    <div class="watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3c0 1-1 1-1 2"/><path d="M12 3c0 1-1 1-1 2"/></svg></div>
+    <div class="eyebrow">
+      <span class="label">
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3c0 1-1 1-1 2"/><path d="M12 3c0 1-1 1-1 2"/></svg></span>
+        <span class="status-dot live"></span>COFFEE
+      </span>
+      <span class="clock">--:--</span>
+    </div>
+    <div id="coffee-body" style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:20px;">
+      <div class="empty" style="flex:none;">
+        <div class="big">loading…</div>
+      </div>
     </div>
   </section>
 
   <!-- STOCKS -->
   <section class="panel" data-name="stocks" style="--accent:var(--c-stocks)">
-    <div class="eyebrow"><span class="label"><span class="status-dot"></span>STOCKS · IBKR</span><span class="clock" id="clock6">--:--</span></div>
+    <div class="watermark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="m6 15 4-4 3 3 5-6"/></svg></div>
+    <div class="eyebrow">
+      <span class="label">
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="m6 15 4-4 3 3 5-6"/></svg></span>
+        <span class="status-dot"></span>STOCKS · IBKR
+      </span>
+      <span class="clock">--:--</span>
+    </div>
     <div class="empty">
       <div class="big">not wired yet</div>
       <div class="sub">Needs a market-data source with an API key (IBKR web API or a free quote feed) pulled on a shorter interval during market hours.</div>
@@ -228,14 +403,17 @@ function goTo(name){
 if(location.hash) goTo(location.hash.slice(1));
 window.addEventListener('hashchange', ()=>goTo(location.hash.slice(1)));
 
-// live clocks
+// live clocks + date
 function tick(){
-  const s = new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+  const now = new Date();
+  const s = now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
   document.querySelectorAll('.clock').forEach(el=>el.textContent = s);
+  const dateEl = document.getElementById('h-date');
+  if(dateEl) dateEl.textContent = now.toLocaleDateString('en-AU',{weekday:'long', month:'long', day:'numeric'});
 }
 tick(); setInterval(tick, 15000);
 
-// weather data
+// weather data (feeds both the Weather panel and the Home masthead)
 async function loadWeather(){
   try{
     const res = await fetch('data/weather.json', {cache:'no-store'});
@@ -246,19 +424,69 @@ async function loadWeather(){
     document.getElementById('w-wind').textContent = Math.round(d.wind_kmh) + ' km/h';
     document.getElementById('w-hum').textContent = Math.round(d.humidity) + '%';
     document.getElementById('w-rain').textContent = Math.round(d.rain_chance) + '%';
+
+    document.getElementById('h-temp').textContent = Math.round(d.temp) + '°';
+    document.getElementById('h-cond').textContent = d.condition + ' · Melbourne';
+    document.getElementById('h-sub').textContent = `FEELS ${Math.round(d.feels_like)}° · RAIN ${Math.round(d.rain_chance)}%`;
   }catch(e){
     document.getElementById('w-cond').textContent = 'Data not available yet';
+    document.getElementById('h-cond').textContent = 'Data not available yet';
   }
 }
 loadWeather();
 setInterval(loadWeather, 5*60*1000);
+
+// coffee data
+function starString(rating){
+  const n = Math.max(0, Math.min(5, rating|0));
+  return '●'.repeat(n) + '○'.repeat(5-n);
+}
+async function loadCoffee(){
+  const body = document.getElementById('coffee-body');
+  try{
+    const res = await fetch('data/coffee.json', {cache:'no-store'});
+    const entries = await res.json();
+    if(!entries.length){
+      body.innerHTML = `<div class="empty" style="flex:none;">
+        <div class="big">no entries yet</div>
+        <div class="sub">Log one via the <a href="https://github.com/arshc1702/personal-dashboards/issues/new?template=coffee-log.yml" target="_blank" rel="noopener">Coffee issue template</a>.</div>
+      </div>`;
+      return;
+    }
+    const latest = entries[0];
+    const rest = entries.slice(1, 5);
+    let html = `
+      <div>
+        <div class="card-label" style="margin-bottom:10px;">Last brew</div>
+        <div style="font-family:var(--display); font-style:italic; font-size:29px; font-weight:500; color:var(--text);">${latest.bean || 'Unnamed bean'}</div>
+        <div style="font-size:15px; color:var(--muted); margin-top:4px;">${[latest.origin, latest.method].filter(Boolean).join(' · ')}</div>
+        <div style="font-family:var(--mono); font-size:16px; color:var(--c-coffee); margin-top:10px; letter-spacing:.08em;">${starString(latest.rating)}</div>
+        ${latest.notes ? `<div style="font-size:14px; color:var(--muted); margin-top:10px; max-width:520px; line-height:1.5;">${latest.notes}</div>` : ''}
+      </div>`;
+    if(rest.length){
+      html += `<div style="display:flex; flex-direction:column; gap:10px; padding-top:16px; border-top:1px solid var(--border);">`;
+      for(const e of rest){
+        html += `<div style="display:flex; justify-content:space-between; align-items:baseline; font-size:14px;">
+          <span style="color:var(--text);">${e.bean || 'Unnamed bean'}</span>
+          <span style="font-family:var(--mono); color:var(--faint);">${starString(e.rating)}</span>
+        </div>`;
+      }
+      html += `</div>`;
+    }
+    body.innerHTML = html;
+  }catch(e){
+    body.innerHTML = `<div class="empty" style="flex:none;"><div class="big">data not available yet</div></div>`;
+  }
+}
+loadCoffee();
+setInterval(loadCoffee, 5*60*1000);
 
 // voice commands
 const micBtn = document.getElementById('mic');
 const voiceLabel = document.getElementById('voiceLabel');
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const routes = {
-  weather:['weather'], running:['running','run'], workouts:['workout','workouts'],
+  home:['home','summary','overview'], weather:['weather'], running:['running','run'], workouts:['workout','workouts'],
   fitness:['fitness','health'], coffee:['coffee'], stocks:['stocks','market','portfolio']
 };
 if(SR){

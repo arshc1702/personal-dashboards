@@ -1,4 +1,4 @@
-const CACHE = 'panel-shell-v1';
+const CACHE = 'panel-shell-v2';
 const SHELL = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', (e)=>{

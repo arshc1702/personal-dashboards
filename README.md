@@ -1,12 +1,14 @@
 # Panel — personal iPad dashboard
 
-A swipeable, always-on instrument panel. One horizontal-scroll page, six
-full-screen sections (weather, running, workouts, fitness, coffee, stocks),
-tap-to-talk voice navigation, installable as a home-screen app on the iPad.
+A swipeable, always-on dashboard. One horizontal-scroll page, seven
+full-screen sections (home, weather, running, workouts, fitness, coffee,
+stocks), tap-to-talk voice navigation, installable as a home-screen app on
+the iPad.
 
-**Status:** Weather is live (Open-Meteo, no API key). The other five panels
-are stubbed with a note on what data source they need — see the roadmap
-at the bottom.
+**Status:** Home (summary front page) and Weather are live (Weather from
+Open-Meteo, no API key). Coffee is live — log a brew via a GitHub Issue and
+it shows up on the panel. The other four panels are stubbed with a note on
+what data source they need — see the roadmap at the bottom.
 
 ## 1. Push this to your own GitHub repo
 
@@ -64,7 +66,7 @@ Two layers, because iOS won't let a web page listen in the background:
   **Shortcuts** app, create one shortcut per panel:
   - Action: *Open URLs* → `https://<you>.github.io/panel/#stocks`
   - Add a custom Siri phrase, e.g. "Show my stocks"
-  - Repeat for `#weather`, `#running`, `#workouts`, `#fitness`, `#coffee`
+  - Repeat for `#home`, `#weather`, `#running`, `#workouts`, `#fitness`, `#coffee`
 
   Now "Hey Siri, show my stocks" opens straight to that panel — the `#name`
   hash routing is already built into `index.html`.
@@ -80,8 +82,13 @@ in `index.html` mirroring `loadWeather()`.
 | Running | Strava API | OAuth needed once; Action refresh every ~30 min is plenty |
 | Stocks | IBKR web API or a free quote feed | Consider a faster interval (5 min) only during market hours to save Action minutes |
 | Workouts | `data/workouts.json`, hand-edited or Siri Shortcut → GitHub API commit | No existing tracker — this file *is* the tracker |
-| Coffee | `data/coffee.json`, same pattern as workouts | Log bean / method / rating; a Shortcut form is a nice way to add entries by voice |
 | Fitness | Strava (load/recovery) or an Apple Health export | Decide scope once running is wired up — may overlap |
 
+Home's Today/Headlines/Stocks tiles are also unwired — same rule, pick a
+source before building. Coffee is done: it's a GitHub Issue form
+(`.github/ISSUE_TEMPLATE/coffee-log.yml`) → `scripts/log_coffee.py` →
+`data/coffee.json`. To log a brew, open a new issue from that template on
+the repo; it appends to the log and shows up on the panel within a minute.
+
 Say the word and I'll build the next panel end-to-end (Action + JSON schema +
-render function) the same way weather was done.
+render function) the same way weather and coffee were done.
