@@ -1,41 +1,41 @@
 {
-  "temp": 8.9,
-  "feels_like": 7.0,
+  "temp": 8.7,
+  "feels_like": 6.7,
   "condition": "Mainly clear",
   "wind_kmh": 8.9,
   "humidity": 92,
-  "rain_chance": 7,
+  "rain_chance": 1,
   "hourly": [
     {
-      "hour": "06:00",
-      "temp": 8.9,
+      "hour": "00:00",
+      "temp": 11.7,
+      "condition": "Drizzle"
+    },
+    {
+      "hour": "01:00",
+      "temp": 11.4,
+      "condition": "Drizzle"
+    },
+    {
+      "hour": "02:00",
+      "temp": 11.2,
+      "condition": "Light drizzle"
+    },
+    {
+      "hour": "03:00",
+      "temp": 11.0,
+      "condition": "Light drizzle"
+    },
+    {
+      "hour": "04:00",
+      "temp": 10.2,
       "condition": "Mainly clear"
     },
     {
-      "hour": "07:00",
-      "temp": 8.7,
-      "condition": "Mainly clear"
-    },
-    {
-      "hour": "08:00",
-      "temp": 9.5,
-      "condition": "Mainly clear"
-    },
-    {
-      "hour": "09:00",
-      "temp": 10.7,
-      "condition": "Mainly clear"
-    },
-    {
-      "hour": "10:00",
-      "temp": 12.4,
-      "condition": "Mainly clear"
-    },
-    {
-      "hour": "11:00",
-      "temp": 13.5,
-      "condition": "Partly cloudy"
+      "hour": "05:00",
+      "temp": 9.4,
+      "condition": "Clear sky"
     }
   ],
-  "updated": "2026-08-25T20:01:07.054911+00:00"
+  "updated": "2026-08-25T20:45:39.898186+00:00"
 }
