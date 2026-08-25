@@ -1,10 +1,10 @@
 {
-  "temp": 16.3,
-  "feels_like": 15.7,
+  "temp": 15.7,
+  "feels_like": 14.4,
   "condition": "Overcast",
-  "wind_kmh": 7.3,
+  "wind_kmh": 10.3,
   "humidity": 73,
-  "rain_chance": 13,
+  "rain_chance": 24,
   "hourly": [
     {
       "hour": "00:00",
@@ -37,5 +37,5 @@
       "condition": "Light showers"
     }
   ],
-  "updated": "2026-08-25T02:31:19.936681+00:00"
+  "updated": "2026-08-25T03:31:11.257273+00:00"
 }
