@@ -1,10 +1,10 @@
 {
-  "temp": 12.4,
-  "feels_like": 11.0,
-  "condition": "Light drizzle",
-  "wind_kmh": 11.5,
-  "humidity": 91,
-  "rain_chance": 21,
+  "temp": 12.3,
+  "feels_like": 10.9,
+  "condition": "Partly cloudy",
+  "wind_kmh": 10.8,
+  "humidity": 88,
+  "rain_chance": 26,
   "hourly": [
     {
       "hour": "00:00",
@@ -37,5 +37,5 @@
       "condition": "Light showers"
     }
   ],
-  "updated": "2026-08-25T11:43:27.999578+00:00"
+  "updated": "2026-08-25T12:16:02.318580+00:00"
 }
