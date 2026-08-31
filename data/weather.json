@@ -1,9 +1,9 @@
 {
-  "temp": 11.5,
-  "feels_like": 8.7,
+  "temp": 14.7,
+  "feels_like": 11.8,
   "condition": "Clear sky",
-  "wind_kmh": 16.6,
-  "humidity": 81,
+  "wind_kmh": 17.5,
+  "humidity": 68,
   "rain_chance": 0,
   "hourly": [
     {
@@ -37,5 +37,5 @@
       "condition": "Clear sky"
     }
   ],
-  "updated": "2026-08-31T20:15:49.680496+00:00"
+  "updated": "2026-08-31T23:59:04.122788+00:00"
 }
