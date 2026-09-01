@@ -1,9 +1,9 @@
 {
-  "temp": 14.7,
-  "feels_like": 11.8,
-  "condition": "Clear sky",
-  "wind_kmh": 17.5,
-  "humidity": 68,
+  "temp": 20.3,
+  "feels_like": 16.1,
+  "condition": "Partly cloudy",
+  "wind_kmh": 25.8,
+  "humidity": 47,
   "rain_chance": 0,
   "hourly": [
     {
@@ -28,14 +28,14 @@
     },
     {
       "hour": "04:00",
-      "temp": 11.9,
+      "temp": 11.6,
       "condition": "Clear sky"
     },
     {
       "hour": "05:00",
-      "temp": 11.7,
+      "temp": 11.4,
       "condition": "Clear sky"
     }
   ],
-  "updated": "2026-08-31T23:59:04.122788+00:00"
+  "updated": "2026-09-01T04:53:49.148842+00:00"
 }
