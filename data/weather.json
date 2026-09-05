@@ -1,10 +1,10 @@
 {
-  "temp": 15.5,
-  "feels_like": 13.2,
-  "condition": "Partly cloudy",
-  "wind_kmh": 19.2,
-  "humidity": 77,
-  "rain_chance": 85,
+  "temp": 17.4,
+  "feels_like": 12.9,
+  "condition": "Mainly clear",
+  "wind_kmh": 24.1,
+  "humidity": 48,
+  "rain_chance": 62,
   "hourly": [
     {
       "hour": "00:00",
@@ -28,14 +28,14 @@
     },
     {
       "hour": "04:00",
-      "temp": 13.7,
+      "temp": 14.2,
       "condition": "Showers"
     },
     {
       "hour": "05:00",
-      "temp": 13.6,
-      "condition": "Showers"
+      "temp": 14.1,
+      "condition": "Dense drizzle"
     }
   ],
-  "updated": "2026-09-05T00:17:35.765200+00:00"
+  "updated": "2026-09-05T04:48:23.330457+00:00"
 }
