@@ -1,9 +1,9 @@
 {
-  "temp": 13.6,
-  "feels_like": 11.2,
+  "temp": 11.9,
+  "feels_like": 11.4,
   "condition": "Overcast",
-  "wind_kmh": 9.4,
-  "humidity": 61,
+  "wind_kmh": 0.5,
+  "humidity": 80,
   "rain_chance": 0,
   "hourly": [
     {
@@ -37,5 +37,5 @@
       "condition": "Clear sky"
     }
   ],
-  "updated": "2026-09-08T05:16:25.781033+00:00"
+  "updated": "2026-09-08T09:56:12.345798+00:00"
 }
