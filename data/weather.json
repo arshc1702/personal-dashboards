@@ -1,14 +1,14 @@
 {
-  "temp": 14.1,
-  "feels_like": 11.3,
+  "temp": 15.2,
+  "feels_like": 11.9,
   "condition": "Overcast",
-  "wind_kmh": 16.5,
-  "humidity": 69,
+  "wind_kmh": 18.7,
+  "humidity": 62,
   "rain_chance": 0,
   "hourly": [
     {
       "hour": "00:00",
-      "temp": 13.8,
+      "temp": 13.9,
       "condition": "Partly cloudy"
     },
     {
@@ -18,12 +18,12 @@
     },
     {
       "hour": "02:00",
-      "temp": 13.3,
+      "temp": 13.5,
       "condition": "Mainly clear"
     },
     {
       "hour": "03:00",
-      "temp": 13.5,
+      "temp": 13.6,
       "condition": "Overcast"
     },
     {
@@ -37,5 +37,5 @@
       "condition": "Overcast"
     }
   ],
-  "updated": "2026-09-12T18:57:22.430696+00:00"
+  "updated": "2026-09-12T21:19:03.805699+00:00"
 }
