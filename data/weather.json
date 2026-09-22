@@ -1,41 +1,41 @@
 {
-  "temp": 13.2,
-  "feels_like": 10.8,
+  "temp": 14.7,
+  "feels_like": 11.2,
   "condition": "Clear sky",
-  "wind_kmh": 11.3,
-  "humidity": 41,
+  "wind_kmh": 13.3,
+  "humidity": 47,
   "rain_chance": 0,
   "hourly": [
-    {
-      "hour": "11:00",
-      "temp": 13.2,
-      "condition": "Clear sky"
-    },
-    {
-      "hour": "12:00",
-      "temp": 13.9,
-      "condition": "Clear sky"
-    },
-    {
-      "hour": "13:00",
-      "temp": 14.6,
-      "condition": "Clear sky"
-    },
-    {
-      "hour": "14:00",
-      "temp": 15.0,
-      "condition": "Clear sky"
-    },
-    {
-      "hour": "15:00",
-      "temp": 15.1,
-      "condition": "Clear sky"
-    },
     {
       "hour": "16:00",
       "temp": 14.7,
       "condition": "Clear sky"
+    },
+    {
+      "hour": "17:00",
+      "temp": 13.7,
+      "condition": "Clear sky"
+    },
+    {
+      "hour": "18:00",
+      "temp": 12.6,
+      "condition": "Clear sky"
+    },
+    {
+      "hour": "19:00",
+      "temp": 12.2,
+      "condition": "Clear sky"
+    },
+    {
+      "hour": "20:00",
+      "temp": 11.8,
+      "condition": "Clear sky"
+    },
+    {
+      "hour": "21:00",
+      "temp": 11.3,
+      "condition": "Clear sky"
     }
   ],
-  "updated": "2026-09-22T01:02:27.391503+00:00"
+  "updated": "2026-09-22T06:12:57.957259+00:00"
 }
