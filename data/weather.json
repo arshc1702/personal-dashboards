@@ -1,10 +1,10 @@
 {
-  "temp": 12.2,
-  "feels_like": 9.3,
-  "condition": "Overcast",
-  "wind_kmh": 16.7,
-  "humidity": 77,
-  "rain_chance": 91,
+  "temp": 10.6,
+  "feels_like": 7.3,
+  "condition": "Partly cloudy",
+  "wind_kmh": 13.7,
+  "humidity": 69,
+  "rain_chance": 1,
   "hourly": [
     {
       "hour": "00:00",
@@ -37,5 +37,5 @@
       "condition": "Drizzle"
     }
   ],
-  "updated": "2026-09-26T06:37:36.719399+00:00"
+  "updated": "2026-09-26T11:48:28.400963+00:00"
 }
