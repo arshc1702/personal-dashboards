@@ -1,7 +1,7 @@
-name: Add a specialty bean
-description: Add a bean to the Coffee panel's Specialty Blend shelf. Use "Add a house bean" for House Blend, or drag it across on the panel later.
+name: Add a house bean
+description: Add a bean to the Coffee panel's House Blend shelf. Use "Add a specialty bean" for Specialty Blend, or drag it across on the panel later.
 title: "Coffee bean"
-labels: ["coffee-bean", "blend:specialty"]
+labels: ["coffee-bean", "blend:house"]
 body:
   - type: input
     id: name

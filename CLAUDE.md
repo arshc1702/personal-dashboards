@@ -99,16 +99,25 @@ a fourth without discussing it first:**
      60/hr unauthenticated limit. Todos (open + closed-this-week) and Coffee
      polling every 2 min would otherwise exceed it on a device with no token.
      It keeps the 401 → unauthenticated retry described below.
-   - **Coffee:** each bean = one issue (always left open — a bean doesn't
-     "complete"), tagged `coffee-bean` + `blend:specialty` or
-     `blend:house`. New beans always come in via the
-     `coffee-bean.yml` issue form (richer fields than a quick client-side
-     add — name, roaster, origin, dose/yield/time, notes, and an image
-     dragged into the form's body, which GitHub auto-hosts and which
-     `extractImageUrl()` pulls out of the issue body via regex on the
-     rendered markdown `![...](url)`). Recategorizing (drag between
-     Specialty/House on the panel) is the only client-side write, via
-     `PATCH /issues/{n}` — and it **replaces the full labels array**
+   - **Coffee:** each bean = one issue, tagged `coffee-bean` +
+     `blend:specialty` or `blend:house`. Open = on the shelf; closed
+     (`state_reason:completed`) = **finished bag** — it leaves the shelf but
+     stays in the **Recipe book**, and can be put back (reopened). A bean
+     closed as `not_planned` (deleted by hand) is ignored. New beans come in
+     via two issue forms — `coffee-bean.yml` (Specialty) and
+     `coffee-bean-house.yml` (House), one per blend so the panel's
+     "+ add bean" link can pick the blend without URL label tricks. Fields
+     are `### Label` body sections: Bean Name, Roaster / Cafe, Origin,
+     Roast Date, Dose, Yield, Time, Grind (Breville Dose Control Pro
+     setting), Rating (1–5), Notes, Image (dragged into the form, GitHub
+     auto-hosts it; `extractImageUrl()` pulls the first `![](url)` or
+     `<img src>` out of the body). Older beans have the grind typed into
+     the name ("Gateway (Grind Size: 2)") — `toBean()` moves it into `grind`
+     for display, and saving from the edit card cleans the name for good.
+     Client-side writes: drag between blends (labels), the **edit card**
+     (rewrites the body sections in place with `setIssueField()`, never
+     touching the Image section, plus title = "<roaster> <name>"), and
+     finished/put-back (state). The drag **replaces the full labels array**
      (`[coffee-bean, blend:<target>]`), not an additive patch, because
      GitHub's API has no "add/remove one label" verb on this endpoint.
      That's fine only because bean issues are constructed to carry
@@ -197,8 +206,12 @@ network; don't make it synchronous. The panel also refreshes after every
 write and whenever the device wakes (`visibilitychange`).
 
 **Coffee panel (bean catalog, replaced the old brew-journal concept
-entirely — don't resurrect "log a brew"):** two drag-and-drop grids,
-Specialty Blend and House Blend, plus a `coffee-setup` spec row at top read
+entirely — don't resurrect "log a brew"; the owner also passed on a per-bean
+recipe-change history):** two drag-and-drop grids, Specialty Blend and
+House Blend, sorted best-rated first, each with a "+ add bean" link to its
+blend's issue form; a **Recipe book** (every bean on the shelf and every
+finished bag, with its full recipe + ratio) opened from the top row; and a
+`coffee-setup` spec row at top read
 from `data/coffee-setup.json` (a small hand-edited array of `{label,
 value}` — machine, grinder, water, whatever gear is worth showing; edit
 that file directly, it's not wired to any Action or issue form since it
@@ -215,11 +228,18 @@ pattern 3. A few things worth knowing before touching this:
   itself, decides which `.bean-grid` it was dropped on). Keep this
   approach for any future drag interaction in this app — don't swap in
   native `draggable` and assume it'll work on the iPad.
-- **Card face vs. detail modal:** the card shows name/roaster/recipe only;
-  tapping opens `#bean-modal-backdrop` with the full image, origin, the
-  dose/yield/time plus an auto-computed ratio (`ratioString()` — never ask
-  the user to type a ratio, derive it), and notes. Keep that split — don't
-  cram everything onto the card face.
+- **Card face vs. detail modal:** the card shows name/roaster/recipe
+  (dose → yield · time · grind), a freshness mark and rating dots only;
+  tapping opens `#bean-modal-backdrop` with the full image, origin,
+  dose/yield/time/grind plus an auto-computed ratio (`ratioString()` —
+  never ask the user to type a ratio, derive it), roast date, notes, and
+  Edit / Finished bag actions. Keep that split — don't cram everything onto
+  the card face. Cards are equal height (fixed-ratio image + clamped info
+  block), photo or not.
+- **Freshness:** `freshMark()` draws days off roast on a 0–45 day track
+  with the peak window (7–30 days, `REST_DAYS`/`PEAK_END_DAYS`) shaded;
+  "resting" before, "past peak" after. Roast dates parse as ISO or AU
+  day/month/year. Rating is 1–5 dots in `--c-coffee`, no stars/emoji.
 - **Images are never uploaded by this codebase.** There's no upload
   endpoint. A bean's image is whatever GitHub-hosted URL shows up in the
   issue body (the owner drags a photo into the issue form's Image field on
@@ -363,11 +383,13 @@ Strava/IBKR data assuming the URL is obscure enough — it isn't.
   wire these to fake/hardcoded data; they stay honest empty states until a
   real source is picked. (Today tile is resolved — see Home panel note
   above.)
-- **Coffee setup specs and initial beans:** `data/coffee-setup.json` ships
-  as an empty array and no bean issues exist yet — both need real content
-  from the owner (gear list; bean name/roaster/recipe/image per bean via
-  the issue form). Don't invent placeholder gear or beans into the live
-  data — ask, same as any other empty-state panel.
+- **Coffee panel redesign (option B):** the owner wants a café-scene
+  redesign (bean bags on a shelf behind a barista portrait, the gear shown
+  as illustrations or photos, a small drinks menu). Concepts are shown as a
+  separate preview Artifact first — don't rebuild the live panel until the
+  owner picks one. Real gear is in `data/coffee-setup.json` (Breville
+  Infuser, Breville Dose Control Pro). Don't invent beans or drinks into
+  the live data.
 - **Aspirational domains still open (board games, stats-flavored content):**
   these came out of a design-personality brief, not a build request. Accent
   tokens are reserved (see design system note above) but no panel, data
