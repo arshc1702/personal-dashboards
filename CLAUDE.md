@@ -215,14 +215,21 @@ the barista — it's public, as is the whole site). Everything live is
 pinned onto it: `.cafe` keeps the picture's 3:2 shape (`fitCafe()` sizes
 it to the panel and sets `--u` = 1% of its height; overlay sizes are in
 `--u`, positions in % of the picture). Measured spots in picture pixels:
-top shelf surface y140 (x32–757), lower shelf surface y343 (x32–708;
-headphones start ~x695, so lower-shelf bags stop before it), chalkboard
+top shelf plank x32–757, top face y141–160, front edge y160–178; lower
+shelf plank x32–708, top face y343–362, front edge y362–375 (headphones
+start ~x695, so lower-shelf bags stop before it). Bags stand on the
+**middle of each top face** — `.shelf` rows are anchored by `bottom` so
+every bag's base is at y150 / y352 (check this if bag sizes change; the
+two rows drifting apart is what made them look misaligned before). Shelf
+tags sit on the front edges. chalkboard
 black area x942–1500 / y45–437, machine x1045–1345, grinder x1348–1480,
 counter top y815–935. If the picture is ever replaced, re-measure these
 and update the `.shelf` / `.board` / `.gear-tag` rules. Pieces:
-- **Bags on the shelves** — Specialty on the top shelf, House below
-  (kraft vs. ink bag), best-rated first. A bean with a photo shows it on
-  the bag's face with a name strip below; without one, a paper label.
+- **Bags on the shelves** — Specialty on the top shelf, House below,
+  best-rated first. Drawn as stand-up coffee pouches (kraft for
+  specialty, ink for house): crimped heat seal, one-way valve, inset
+  side-crease shading, gusset line, contact shadow. The front label is a
+  sticker holding the bean's photo (if any) with the name under it.
   The bag shows the **name only** (owner dropped the roaster from the bag)
   and the **full name must always show**: it wraps, and `fitBagNames()`
   shrinks the type until it fits — never clamp or ellipsis it. `SHELF_SLOTS` (6/5) is what fits; the last slot is

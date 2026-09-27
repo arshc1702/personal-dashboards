@@ -387,50 +387,89 @@
     position:absolute; left:3.5%; display:flex; align-items:flex-end; gap:calc(var(--u) * 1.3);
     box-sizing:border-box; border-radius:calc(var(--u) * .8); transition:background-color .15s;
   }
-  .shelf.top{ top:0; height:17.4%; width:44.7%; padding-bottom:calc(var(--u) * 3.1); }
-  .shelf.low{ top:19.5%; height:17.1%; width:40.8%; padding-bottom:calc(var(--u) * 3.1); }
+  .shelf.top{ bottom:85.35%; height:14.2%; width:44.7%; }
+  .shelf.low{ bottom:65.6%; height:15%; width:40.8%; }
   .shelf.drag-over{ background:rgba(250,248,244,.22); }
   .shelf-tag{
     position:absolute; left:4.2%; padding:calc(var(--u) * .25) calc(var(--u) * .7);
     font-family:var(--mono); font-size:calc(var(--u) * 1.05); letter-spacing:.14em; text-transform:uppercase;
     color:var(--text); background:rgba(250,248,244,.9); border-radius:2px; pointer-events:none;
   }
-  .shelf-tag.top{ top:14.6%; }
-  .shelf-tag.low{ top:34.4%; }
+  .shelf-tag.top{ top:15.9%; }
+  .shelf-tag.low{ top:35.6%; }
 
-  /* a bag: folded top, valve, paper label — kraft for specialty, ink for house */
+  /* a bag: a stand-up coffee pouch — crimped heat seal, one-way valve, side
+     creases, gusseted base, contact shadow on the plank; the label is a
+     sticker carrying the bean's photo (if any) and its full name.
+     Kraft for specialty, ink for house. */
   .bag{
-    width:calc(var(--u) * 8.9); height:calc(var(--u) * 12); flex-shrink:0; box-sizing:border-box;
-    border-radius:calc(var(--u) * .5) calc(var(--u) * .5) calc(var(--u) * .8) calc(var(--u) * .8);
-    display:flex; flex-direction:column; align-items:center; overflow:hidden;
+    position:relative; width:calc(var(--u) * 8.6); height:calc(var(--u) * 12.4); flex-shrink:0; box-sizing:border-box;
+    border-radius:calc(var(--u) * .3) calc(var(--u) * .3) calc(var(--u) * .9) calc(var(--u) * .9) / calc(var(--u) * .3) calc(var(--u) * .3) calc(var(--u) * .5) calc(var(--u) * .5);
+    display:flex; flex-direction:column; align-items:center;
     cursor:grab; touch-action:none; -webkit-user-select:none; user-select:none;
-    box-shadow:0 calc(var(--u) * .35) calc(var(--u) * .9) rgba(43,38,32,.38);
-    background:color-mix(in srgb, var(--c-coffee) 62%, var(--bg));
+    --bag:color-mix(in srgb, var(--c-coffee) 62%, var(--bg));
+    background:var(--bag);
+    box-shadow:
+      inset calc(var(--u) * .9) 0 calc(var(--u) * .8) calc(var(--u) * -.55) rgba(43,38,32,.32),
+      inset calc(var(--u) * -.9) 0 calc(var(--u) * .8) calc(var(--u) * -.55) rgba(43,38,32,.32),
+      inset 0 calc(var(--u) * -.7) calc(var(--u) * .6) calc(var(--u) * -.35) rgba(43,38,32,.3),
+      0 calc(var(--u) * .15) calc(var(--u) * .25) rgba(43,38,32,.35),
+      calc(var(--u) * .5) calc(var(--u) * .3) calc(var(--u) * 1) rgba(43,38,32,.22);
   }
-  .bag.house{ background:var(--text); }
-  .bag.lifting{ box-shadow:0 14px 30px rgba(43,38,32,.4); cursor:grabbing; z-index:50; }
-  .bag-top{ align-self:stretch; height:14%; background:rgba(43,38,32,.18); }
-  .bag.house .bag-top{ background:rgba(250,248,244,.12); }
-  .bag-valve{ width:calc(var(--u) * .7); height:calc(var(--u) * .7); border-radius:50%; margin-top:6%; border:1px solid rgba(43,38,32,.4); }
-  .bag.house .bag-valve{ border-color:rgba(250,248,244,.4); }
+  .bag.house{ --bag:var(--text); }
+  .bag.lifting{ cursor:grabbing; z-index:50;
+    box-shadow:
+      inset calc(var(--u) * .9) 0 calc(var(--u) * .8) calc(var(--u) * -.55) rgba(43,38,32,.32),
+      inset calc(var(--u) * -.9) 0 calc(var(--u) * .8) calc(var(--u) * -.55) rgba(43,38,32,.32),
+      0 14px 30px rgba(43,38,32,.4); }
+  /* soft sheen down the left third, like light catching the foil */
+  .bag::before{
+    content:''; position:absolute; top:12%; bottom:8%; left:18%; width:12%; border-radius:50%;
+    background:rgba(250,248,244,.13); pointer-events:none;
+  }
+  .bag.house::before{ background:rgba(250,248,244,.08); }
+  /* gusseted base: the curved fold where the bag stands */
+  .bag::after{
+    content:''; position:absolute; left:7%; right:7%; bottom:2.5%; height:7%; border-radius:50%;
+    border-top:1px solid rgba(43,38,32,.22); pointer-events:none;
+  }
+  .bag.house::after{ border-top-color:rgba(250,248,244,.14); }
+  /* crimped heat seal + zip line */
+  .bag-top{
+    align-self:stretch; height:9%; flex-shrink:0;
+    border-radius:calc(var(--u) * .3) calc(var(--u) * .3) 0 0;
+    background:repeating-linear-gradient(90deg, rgba(43,38,32,.2) 0 1px, transparent 1px 3px);
+    border-bottom:1px solid rgba(43,38,32,.3);
+    box-shadow:0 calc(var(--u) * .45) 0 calc(var(--u) * -.35) rgba(43,38,32,.18);
+  }
+  .bag.house .bag-top{ background:repeating-linear-gradient(90deg, rgba(250,248,244,.16) 0 1px, transparent 1px 3px); border-bottom-color:rgba(250,248,244,.2); }
+  .bag-valve{
+    width:calc(var(--u) * .75); height:calc(var(--u) * .75); border-radius:50%; margin-top:5%; flex-shrink:0;
+    background:rgba(43,38,32,.12); border:1px solid rgba(43,38,32,.35); box-shadow:inset 0 0 0 calc(var(--u) * .15) rgba(250,248,244,.35);
+  }
+  .bag.house .bag-valve{ background:rgba(250,248,244,.1); border-color:rgba(250,248,244,.35); }
+  /* the sticker label */
   .bag-label{
-    margin:8% 9% 0; align-self:stretch; flex:1; margin-bottom:10%;
-    background:var(--surface); border-radius:calc(var(--u) * .3);
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:calc(var(--u) * .25);
-    padding:calc(var(--u) * .4) calc(var(--u) * .3); text-align:center; min-height:0; overflow:hidden;
+    position:relative; margin:5% 11% 13%; align-self:stretch; flex:1; min-height:0; overflow:hidden;
+    background:var(--surface); border-radius:calc(var(--u) * .25);
+    box-shadow:0 0 0 1px rgba(43,38,32,.08);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:calc(var(--u) * .3);
+    padding:calc(var(--u) * .35); text-align:center;
   }
   .bag.house .bag-label{ background:var(--bg); }
-  /* the full name always shows: it wraps instead of clipping (the photo gives up the room) */
-  .bag-name{ font-family:var(--display); font-style:italic; font-weight:500; font-size:calc(var(--u) * 1.5); line-height:1.1; color:var(--text);
-    overflow-wrap:anywhere; hyphens:auto; }
-  /* bag with the bean's own photo on its face, name strip underneath */
-  .bag-photo{ align-self:stretch; flex:1; min-height:0; width:100%; object-fit:cover; display:block; pointer-events:none; background:var(--bg); }
-  .bag.has-photo .bag-label{ flex:none; max-height:55%; margin:0; border-radius:0; padding:calc(var(--u) * .45) calc(var(--u) * .35) calc(var(--u) * .5); }
-  .bag.has-photo .bag-name{ font-size:calc(var(--u) * 1.3); }
+  .bag.has-photo .bag-label{ justify-content:flex-start; }
+  /* the full name always shows: it wraps, and fitBagNames() shrinks it if it still doesn't fit */
+  .bag-name{ font-family:var(--display); font-style:italic; font-weight:500; font-size:calc(var(--u) * 1.4); line-height:1.1; color:var(--text);
+    overflow-wrap:anywhere; hyphens:auto; flex-shrink:0; }
+  .bag-photo{
+    align-self:stretch; flex:1; min-height:45%; width:100%; object-fit:cover; display:block; pointer-events:none;
+    border-radius:calc(var(--u) * .15); background:var(--bg);
+  }
+  .bag.has-photo .bag-name{ font-size:calc(var(--u) * 1.2); }
   .bag .rating{ gap:calc(var(--u) * .2); }
   .bag .rating i{ width:calc(var(--u) * .5); height:calc(var(--u) * .5); }
   .bag-add, .bag-more{
-    width:calc(var(--u) * 8.9); height:calc(var(--u) * 12); flex-shrink:0; box-sizing:border-box;
+    width:calc(var(--u) * 8.6); height:calc(var(--u) * 12.4); flex-shrink:0; box-sizing:border-box;
     border:1px solid rgba(43,38,32,.28); border-radius:calc(var(--u) * .5) calc(var(--u) * .5) calc(var(--u) * .8) calc(var(--u) * .8);
     display:flex; align-items:center; justify-content:center; text-align:center; text-decoration:none; cursor:pointer;
     font-family:var(--mono); font-size:calc(var(--u) * 1); color:rgba(43,38,32,.6); background:rgba(250,248,244,.18);
@@ -1730,10 +1769,9 @@ const CLOSE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 function beanCardHtml(b){
   return `<div class="bean-card bag ${b.blend}${b.image ? ' has-photo' : ''}" data-number="${b.number}" title="${escapeHtml([b.name, b.roaster].filter(Boolean).join(' · '))}">
     <div class="bag-top"></div>
-    ${b.image
-      ? `<img class="bag-photo" src="${escapeHtml(b.image)}" alt="" draggable="false" loading="lazy">`
-      : `<div class="bag-valve"></div>`}
+    <div class="bag-valve"></div>
     <div class="bag-label">
+      ${b.image ? `<img class="bag-photo" src="${escapeHtml(b.image)}" alt="" draggable="false" loading="lazy">` : ''}
       <span class="bag-name">${escapeHtml(b.name)}</span>
       ${ratingDots(b.rating)}
     </div>
