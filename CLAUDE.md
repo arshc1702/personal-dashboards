@@ -79,8 +79,26 @@ a fourth without discussing it first:**
    append-only, pattern 2 (Issue form) is simpler and needs no client-side
    token at all.
    - **Todos:** each task = one issue (open=active, closed=done), tagged
-     `todo` + `category:<x>`. Add = `POST /issues`. Complete = `PATCH
-     /issues/{n}` with `state:closed`.
+     `todo` + `category:<x>` (`work`, `padel`, `life-admin`). Add = `POST
+     /issues`. Complete = `PATCH /issues/{n}` with `state:closed,
+     state_reason:completed`; "Remove task" in the edit sheet closes with
+     `state_reason:not_planned` (the token can't hard-delete issues, and
+     not_planned keeps removals out of "done this week"). Rename/re-file =
+     `PATCH` title and/or the **full** labels array `[todo,
+     category:<x>]` (same replace-not-add caveat as Coffee below — todo
+     issues carry exactly these two labels). Priority order and Today's-three
+     membership live in a hidden HTML comment at the end of the issue body,
+     `<!-- panel:{"rank":<n>,"today":<n>} -->` — invisible on github.com, no
+     extra labels, one `PATCH` of the body per drag. `rank` lower = higher in
+     its column; an issue with no comment gets `rank = -created_at/1000`, so
+     new tasks land at the top of their column. `today` present = pinned into
+     Today's three (value orders the slots). Don't replace this with labels —
+     the owner explicitly doesn't want more labels.
+   - **Reads use `ghGetJson()`** (conditional GET with `If-None-Match`):
+     an unchanged list returns 304, which doesn't count against GitHub's
+     60/hr unauthenticated limit. Todos (open + closed-this-week) and Coffee
+     polling every 2 min would otherwise exceed it on a device with no token.
+     It keeps the 401 → unauthenticated retry described below.
    - **Coffee:** each bean = one issue (always left open — a bean doesn't
      "complete"), tagged `coffee-bean` + `blend:specialty` or
      `blend:house`. New beans always come in via the
@@ -129,27 +147,54 @@ only; tapping/swiping into a domain's own panel is still where the detail
 lives. Its tiles mirror whatever the domain's own panel status is — don't
 fake data in a Home tile that the domain panel itself doesn't have yet. The
 Today tile is wired to the same `loadTodos()` data as the Todos panel
-(total open count + a short preview, not a completion ring — there's no
-"due today" concept in the Issues-backed model, so don't reintroduce one
-without a real due-date field); the Workout sub-section stays an honest
+(total open count, done-this-week count, and the owner's Today's three —
+or the top task of each column if none are pinned. No completion ring and
+no "due today" — there's no due-date field, so don't reintroduce one
+without adding a real one); the Workout sub-section stays an honest
 empty state until a workout-plan source exists.
 
-**Todos panel's "ledger" pattern (deliberate, keep on new categories):**
-each category card shows its **oldest open issue as a "Next up" hero**
-(`.todo-hero`, Newsreader italic, a `NEXT UP · <age>` mono tag in the
-category accent) and the rest as a compact list below a hairline — sorted
-oldest-first, so hierarchy reflects a real signal (what's been waiting
-longest), not arbitrary emphasis. Every row carries a `timeAgo(created_at)`
-age tag for the same reason. The add-field is a ledger-style underline
-(`.todo-add`, transparent background, border-bottom only), not a boxed
-input — matches the journal/editorial voice, don't revert to a boxed field.
-Completing a task is optimistic: `.checking` plays a drawn-in checkmark +
-strikethrough (~220ms), `.leaving` fades the row out (~240ms), *then* the
-local cache is updated and the GitHub PATCH fires in the background — the
-UI never waits on the network. If that PATCH fails, it alerts and calls
-`loadTodos()` to reconcile with reality rather than trusting the optimistic
-state. Keep this order (animate → mutate local state → network) if you
-touch this code; don't make it synchronous again.
+**Todos panel = "the ledger" (owner-chosen design, keep it):** the whole
+panel is one `.card.ledger` paper sheet, laid out like a front page:
+- **Today's three** on top — up to 3 headline slots (Newsreader italic,
+  split by hairline rules) that the owner fills by dragging tasks up. They
+  stay until ticked off or dragged back down — **no daily reset and no
+  "since yesterday"/"suggested" tags** (owner decision). A pinned task is
+  shown only in the slot, not also in its column, but keeps its category
+  name/colour. Fewer than 3 → a faint italic hint slot ("Hold a task and
+  drag it up here"), which doubles as gesture discoverability. When full,
+  dropping a task onto a slot swaps that slot's task back to its column.
+- **Three category columns** below a dark rule (Work / Padel Club / Life
+  Admin), separated by hairlines, each with a ledger-style underline add
+  field on top (`.todo-add`, never a boxed input). Order is the owner's
+  **manual priority** (`rank`, see pattern 3), not oldest-first. Columns
+  show 6 rows then a `+ N more` toggle. No dragging across columns —
+  re-filing is only via the edit sheet (owner decision, prevents accidental
+  re-files).
+- **Waiting-time mark** (`ageMark()`) on every task: a short track with a
+  dot that slides right on a log scale (today → ~1 month+ pinned at the
+  end) plus the `timeAgo` label. Order says what the owner thinks matters;
+  the dot says what's been neglected. Keep both signals.
+- **Done this week** line at the sheet's foot: tasks closed as completed in
+  the last 7 days, struck through with a category dot.
+- **Colour use:** headlines in `--text` ink; each category's `--c-*` token
+  only on small marks (column name, checkbox fill, age dot/track, chips);
+  `--accent` green only on the "Today's three" label. No new hex values.
+
+**Todos gestures (one finger, three jobs):** tap = complete · press-and-hold
+(~380ms) then move = drag · hold then release without moving = edit sheet
+(rename / change category / remove). Hand-rolled on Pointer Events like
+Coffee, plus a non-passive `touchmove` `preventDefault` once a task is
+lifted so the deck doesn't scroll under the finger. `renderTodosPanel()`
+defers while a task is lifted — never rebuild the DOM mid-drag.
+
+**Completing is optimistic with a 5s undo:** `.checking` draws the
+checkmark (~220ms), `.leaving` fades the row (~240ms), then local state
+updates and an Undo toast shows; the `PATCH` fires when the toast expires
+(or immediately if another task is completed, the page is hidden, or it
+unloads — sent with `keepalive`). If the `PATCH` fails, alert and
+`loadTodos()` to reconcile. Keep the order animate → mutate local state →
+network; don't make it synchronous. The panel also refreshes after every
+write and whenever the device wakes (`visibilitychange`).
 
 **Coffee panel (bean catalog, replaced the old brew-journal concept
 entirely — don't resurrect "log a brew"):** two drag-and-drop grids,
@@ -202,10 +247,6 @@ pattern 3. A few things worth knowing before touching this:
   1px, transparent 1px)`) — a graph-paper nod to the "statistician who
   loves data" personality brief. Keep it subtle; it's texture, not a
   focal element.
-- The Home "Today" card has an SVG ring showing task completion
-  (`stroke-dasharray` trick, `--accent` colored). If task data becomes
-  real, recompute the dasharray from the real fraction rather than
-  hardcoding.
 - Avoid the generic-AI-dashboard tropes this system deliberately steered
   away from: no gradients, no left-border-accent cards, no emoji as
   icons (SVG stroke icons only), minimal animation (the pulsing
@@ -289,6 +330,24 @@ Strava/IBKR data assuming the URL is obscure enough — it isn't.
   listening each time — there is no always-listening mode. The Siri
   Shortcuts + `#hash` deep-link path is the hands-free route; don't try to
   build background listening, it's not possible in this environment.
+
+## Parked decisions (agreed, not yet built)
+
+- **Easier token setup (improvement #15 from the Sept 2026 review):**
+  keep pattern 3's on-device token, but remove the paste friction —
+  (1) tell the owner to create the fine-grained PAT with a 1-year expiry;
+  (2) add a private "connect link" `…/personal-dashboards/#connect=<token>`
+  that, when opened, saves the token to `localStorage` and immediately
+  strips it from the URL with `history.replaceState` (the hash never
+  reaches GitHub Pages' logs); the owner keeps that link in Apple Notes /
+  a password manager and taps it once per device; (3) one shared connect
+  control for Todos + Coffee, and a specific "token expired — tap your
+  connect link" message on a 401 instead of the generic "Could not save".
+  Rejected alternatives: a Cloudflare Worker proxy (more moving parts,
+  still needs a per-device PIN), Todoist as the source (loses on-panel
+  add/complete).
+- **Todos due dates / pinning** were discussed and set aside — Today's
+  three covers "what matters today". Don't add due dates without asking.
 
 ## Open questions before building the next panels
 
