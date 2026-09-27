@@ -205,17 +205,39 @@ unloads — sent with `keepalive`). If the `PATCH` fails, alert and
 network; don't make it synchronous. The panel also refreshes after every
 write and whenever the device wakes (`visibilitychange`).
 
-**Coffee panel (bean catalog, replaced the old brew-journal concept
-entirely — don't resurrect "log a brew"; the owner also passed on a per-bean
-recipe-change history):** two drag-and-drop grids, Specialty Blend and
-House Blend, sorted best-rated first, each with a "+ add bean" link to its
-blend's issue form; a **Recipe book** (every bean on the shelf and every
-finished bag, with its full recipe + ratio) opened from the top row; and a
-`coffee-setup` spec row at top read
-from `data/coffee-setup.json` (a small hand-edited array of `{label,
-value}` — machine, grinder, water, whatever gear is worth showing; edit
-that file directly, it's not wired to any Action or issue form since it
-changes rarely). Bean data comes from GitHub Issues, see Architecture
+**Coffee panel = the café (owner-chosen, a deliberate exception to the
+illustration/no-new-colour rules — Coffee only, don't "fix" it back, and
+don't spread the look to other panels; the old brew-journal concept is
+gone — don't resurrect "log a brew"; the owner also passed on a per-bean
+recipe-change history):** the stage is `assets/coffee-cafe.webp`
+(1536×1024, made by the owner in an image generator, shows the owner as
+the barista — it's public, as is the whole site). Everything live is
+pinned onto it: `.cafe` keeps the picture's 3:2 shape (`fitCafe()` sizes
+it to the panel and sets `--u` = 1% of its height; overlay sizes are in
+`--u`, positions in % of the picture). Measured spots in picture pixels:
+top shelf surface y140 (x32–757), lower shelf surface y343 (x32–708;
+headphones start ~x695, so lower-shelf bags stop before it), chalkboard
+black area x942–1500 / y45–437, machine x1045–1345, grinder x1348–1480,
+counter top y815–935. If the picture is ever replaced, re-measure these
+and update the `.shelf` / `.board` / `.gear-tag` rules. Pieces:
+- **Bags on the shelves** — Specialty on the top shelf, House below
+  (kraft vs. ink bag, paper label with roaster, name, rating dots),
+  best-rated first. `SHELF_SLOTS` (6/5) is what fits; the last slot is
+  "+ add bean" (that blend's issue form), or "+N more" (opens the Recipe
+  book) when full. Drag a bag between shelves to re-blend; tap for the
+  detail modal. Bags keep the `.bean-card` / `.bean-grid` classes that
+  `attachBeanCardHandlers()` uses.
+- **The chalkboard** is the live menu: "On the bar" lists the shelf's
+  beans as recipes (name, ratio, dose → yield · time · grind, days off
+  roast), up to 4, tap one for its detail; the **Recipe book** link (every
+  bean on the shelf and every finished bag) sits at its foot. No invented
+  drinks — it only shows real beans.
+- **Gear tags** on the counter under the machine and grinder, from
+  `data/coffee-setup.json` (the `Machine` and `Grinder` rows of a small
+  hand-edited `{label, value}` array — edit it directly).
+- **Don't** put `transform`, `filter` or `contain` on `.cafe` or its
+  ancestors — the drag lifts a bag with `position:fixed`, which those would
+  re-anchor. Bean data comes from GitHub Issues, see Architecture
 pattern 3. A few things worth knowing before touching this:
 - **Drag-and-drop is hand-rolled on Pointer Events, not native HTML5
   DnD.** The `draggable` attribute's DnD API does not work reliably on iOS
@@ -288,9 +310,13 @@ pattern 3. A few things worth knowing before touching this:
   preview, and leave the live panel as an honest empty state until a real
   source is picked.
 
-**PWA shell:** `manifest.json` + `sw.js` are already wired for
-Add-to-Home-Screen. Don't touch unless a panel needs offline behavior beyond
-what's there.
+**PWA shell:** `manifest.json` + `sw.js` are wired for Add-to-Home-Screen.
+`sw.js` is **network-first** for this site's own files (cache is only the
+offline fallback) so updates actually reach the always-on iPad, deletes old
+caches on activate, and never intercepts other origins (GitHub API, fonts,
+bean photos). The old version was cache-first with a fixed cache name and
+could pin an installed iPad to a stale `index.html` — don't go back to
+cache-first. Bump `CACHE` if you change what the shell pre-caches.
 
 ## Privacy tiers — apply automatically, don't ask each time
 
@@ -383,13 +409,6 @@ Strava/IBKR data assuming the URL is obscure enough — it isn't.
   wire these to fake/hardcoded data; they stay honest empty states until a
   real source is picked. (Today tile is resolved — see Home panel note
   above.)
-- **Coffee panel redesign (option B):** the owner wants a café-scene
-  redesign (bean bags on a shelf behind a barista portrait, the gear shown
-  as illustrations or photos, a small drinks menu). Concepts are shown as a
-  separate preview Artifact first — don't rebuild the live panel until the
-  owner picks one. Real gear is in `data/coffee-setup.json` (Breville
-  Infuser, Breville Dose Control Pro). Don't invent beans or drinks into
-  the live data.
 - **Aspirational domains still open (board games, stats-flavored content):**
   these came out of a design-personality brief, not a build request. Accent
   tokens are reserved (see design system note above) but no panel, data

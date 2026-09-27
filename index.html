@@ -369,38 +369,107 @@
     .col-list{ overflow:visible; }
   }
 
-  /* COFFEE panel — bean catalog */
-  .coffee-setup{
-    display:flex; gap:30px; flex-wrap:wrap; flex-shrink:0;
-    padding-bottom:16px; margin-bottom:18px; border-bottom:1px solid var(--border);
+  /* COFFEE panel — the café. assets/coffee-cafe.webp (1536×1024, owner-made)
+     is the stage; everything live is pinned onto it in % of the picture,
+     sized in --u (1% of the scene's height, set by fitCafe()). Deliberate
+     exception to the no-illustration rule: owner's choice, Coffee only. */
+  [data-name="coffee"] .watermark{ display:none; } /* the scene covers the panel */
+  .cafe-wrap{ flex:1; min-height:0; margin-top:16px; display:flex; align-items:center; justify-content:center; }
+  .cafe{
+    position:relative; width:100%; aspect-ratio:3/2; flex-shrink:0;
+    border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
+    background:var(--c-coffee) url(assets/coffee-cafe.webp) center / 100% 100% no-repeat;
+    --u:7px;
   }
-  .coffee-setup .spec .k{ font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); }
-  .coffee-setup .spec .v{ font-family:var(--sans); font-size:14px; color:var(--text); margin-top:3px; }
 
-  .blend-cols{ flex:1; display:grid; grid-template-columns:1fr 1fr; gap:26px; min-height:0; }
-  .blend-col{ display:flex; flex-direction:column; gap:13px; min-height:0; }
-  .bean-grid{
-    flex:1; display:grid; grid-template-columns:repeat(auto-fill, minmax(148px,1fr));
-    align-content:start; gap:14px; overflow-y:auto; min-height:60px;
-    border-radius:var(--radius); transition:background-color .15s;
+  /* shelves: bags stand on the painted planks (top surface y140 and y343) */
+  .shelf{
+    position:absolute; left:3.5%; display:flex; align-items:flex-end; gap:calc(var(--u) * 1.3);
+    box-sizing:border-box; border-radius:calc(var(--u) * .8); transition:background-color .15s;
   }
-  .bean-grid.drag-over{ background-color:color-mix(in srgb, var(--c-coffee) 7%, transparent); }
-  .bean-empty{ font-family:var(--mono); font-size:11px; color:var(--faint); grid-column:1/-1; }
-  .bean-empty a{ color:var(--c-coffee); }
+  .shelf.top{ top:0; height:17.4%; width:44.7%; padding-bottom:calc(var(--u) * 3.1); }
+  .shelf.low{ top:19.5%; height:17.1%; width:40.8%; padding-bottom:calc(var(--u) * 3.1); }
+  .shelf.drag-over{ background:rgba(250,248,244,.22); }
+  .shelf-tag{
+    position:absolute; left:4.2%; padding:calc(var(--u) * .25) calc(var(--u) * .7);
+    font-family:var(--mono); font-size:calc(var(--u) * 1.05); letter-spacing:.14em; text-transform:uppercase;
+    color:var(--text); background:rgba(250,248,244,.9); border-radius:2px; pointer-events:none;
+  }
+  .shelf-tag.top{ top:14.6%; }
+  .shelf-tag.low{ top:34.4%; }
 
-  .bean-card{
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-    box-shadow:var(--shadow); overflow:hidden; cursor:grab; touch-action:none;
-    display:flex; flex-direction:column;
+  /* a bag: folded top, valve, paper label — kraft for specialty, ink for house */
+  .bag{
+    width:calc(var(--u) * 8.9); height:calc(var(--u) * 12); flex-shrink:0; box-sizing:border-box;
+    border-radius:calc(var(--u) * .5) calc(var(--u) * .5) calc(var(--u) * .8) calc(var(--u) * .8);
+    display:flex; flex-direction:column; align-items:center; overflow:hidden;
+    cursor:grab; touch-action:none; -webkit-user-select:none; user-select:none;
+    box-shadow:0 calc(var(--u) * .35) calc(var(--u) * .9) rgba(43,38,32,.38);
+    background:color-mix(in srgb, var(--c-coffee) 62%, var(--bg));
   }
-  .bean-card.lifting{ box-shadow:0 14px 30px rgba(43,38,32,.2); cursor:grabbing; opacity:.96; }
-  .bean-img{ width:100%; aspect-ratio:4/3; object-fit:cover; display:block; background:var(--bg); }
-  .bean-img-ph{ width:100%; aspect-ratio:4/3; background:var(--bg); display:flex; align-items:center; justify-content:center; color:var(--faint); }
-  .bean-img-ph svg{ width:26px; height:26px; }
-  .bean-info{ padding:11px 12px 12px; display:flex; flex-direction:column; gap:2px; }
+  .bag.house{ background:var(--text); }
+  .bag.lifting{ box-shadow:0 14px 30px rgba(43,38,32,.4); cursor:grabbing; z-index:50; }
+  .bag-top{ align-self:stretch; height:14%; background:rgba(43,38,32,.18); }
+  .bag.house .bag-top{ background:rgba(250,248,244,.12); }
+  .bag-valve{ width:calc(var(--u) * .7); height:calc(var(--u) * .7); border-radius:50%; margin-top:6%; border:1px solid rgba(43,38,32,.4); }
+  .bag.house .bag-valve{ border-color:rgba(250,248,244,.4); }
+  .bag-label{
+    margin:8% 9% 0; align-self:stretch; flex:1; margin-bottom:10%;
+    background:var(--surface); border-radius:calc(var(--u) * .3);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:calc(var(--u) * .25);
+    padding:calc(var(--u) * .4) calc(var(--u) * .3); text-align:center; min-height:0; overflow:hidden;
+  }
+  .bag.house .bag-label{ background:var(--bg); }
+  .bag-roaster{ font-family:var(--mono); font-size:calc(var(--u) * .85); letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
+    max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bag-name{ font-family:var(--display); font-style:italic; font-weight:500; font-size:calc(var(--u) * 1.55); line-height:1.1; color:var(--text);
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .bag .rating{ gap:calc(var(--u) * .2); }
+  .bag .rating i{ width:calc(var(--u) * .5); height:calc(var(--u) * .5); }
+  .bag-add, .bag-more{
+    width:calc(var(--u) * 8.9); height:calc(var(--u) * 12); flex-shrink:0; box-sizing:border-box;
+    border:1px solid rgba(43,38,32,.28); border-radius:calc(var(--u) * .5) calc(var(--u) * .5) calc(var(--u) * .8) calc(var(--u) * .8);
+    display:flex; align-items:center; justify-content:center; text-align:center; text-decoration:none; cursor:pointer;
+    font-family:var(--mono); font-size:calc(var(--u) * 1); color:rgba(43,38,32,.6); background:rgba(250,248,244,.18);
+  }
+
+  /* the chalkboard (black area x942–1500, y45–437): live menu of what's on the shelf */
+  .board{
+    position:absolute; left:61.3%; top:4.4%; width:36.3%; height:38.3%; box-sizing:border-box;
+    padding:calc(var(--u) * 2.4) calc(var(--u) * 3) calc(var(--u) * 1.8);
+    display:flex; flex-direction:column; gap:calc(var(--u) * 1.4); color:rgba(250,248,244,.92);
+  }
+  .board-head{ display:flex; justify-content:space-between; align-items:baseline; }
+  .board-title{ font-family:var(--display); font-style:italic; font-size:calc(var(--u) * 3.6); line-height:1; }
+  .board-kicker{ font-family:var(--mono); font-size:calc(var(--u) * 1); letter-spacing:.16em; text-transform:uppercase; color:rgba(250,248,244,.5); }
+  .board-rule{ height:1px; background:rgba(250,248,244,.22); flex-shrink:0; }
+  .board-list{ flex:1; min-height:0; display:flex; flex-direction:column; gap:calc(var(--u) * 1.3); overflow:hidden; }
+  .board-item{ display:flex; flex-direction:column; gap:calc(var(--u) * .35); background:none; border:none; padding:0; text-align:left; cursor:pointer; color:inherit; font:inherit; }
+  .bi-row{ display:flex; align-items:baseline; gap:calc(var(--u) * .9); }
+  .bi-name{ font-family:var(--display); font-style:italic; font-size:calc(var(--u) * 2.3); line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bi-lead{ flex:1; min-width:calc(var(--u) * 2); border-bottom:1px dotted rgba(250,248,244,.35); transform:translateY(calc(var(--u) * -.5)); }
+  .bi-ratio{ font-family:var(--mono); font-size:calc(var(--u) * 1.35); color:rgba(250,248,244,.8); }
+  .bi-sub{ font-family:var(--mono); font-size:calc(var(--u) * 1.25); color:rgba(250,248,244,.55); }
+  .board-empty{ font-family:var(--display); font-style:italic; font-size:calc(var(--u) * 1.9); color:rgba(250,248,244,.6); }
+  .board-empty a{ color:inherit; }
+  .board-foot{
+    align-self:flex-start; background:none; border:none; padding:0; cursor:pointer;
+    font-family:var(--mono); font-size:calc(var(--u) * 1.15); letter-spacing:.08em; color:rgba(250,248,244,.7); text-decoration:underline;
+  }
+
+  /* gear tags on the counter top, under the machine and grinder */
+  .gear-tag{
+    position:absolute; top:80.8%; padding:calc(var(--u) * .35) calc(var(--u) * .8);
+    font-family:var(--mono); font-size:calc(var(--u) * 1.05); letter-spacing:.06em; white-space:nowrap;
+    color:var(--text); background:rgba(250,248,244,.9); border-radius:2px; pointer-events:none;
+  }
+  .gear-tag:empty{ display:none; }
+  .gear-tag.machine{ left:77.8%; transform:translateX(-50%); }
+  .gear-tag.grinder{ right:1.6%; }
+
   .bean-name{ font-family:var(--display); font-style:italic; font-weight:500; font-size:14px; color:var(--text); line-height:1.25; }
   .bean-roaster{ font-size:11px; color:var(--muted); }
-  .bean-recipe{ font-family:var(--mono); font-size:10px; color:var(--faint); margin-top:3px; }
+  .bean-empty{ font-family:var(--mono); font-size:11px; color:var(--faint); }
 
   .bean-modal-backdrop{
     position:fixed; inset:0; background:rgba(43,38,32,.4); backdrop-filter:blur(3px);
@@ -422,14 +491,6 @@
   .bean-modal-body .bean-name{ font-size:23px; }
   .bean-modal-body .bean-roaster{ font-size:14px; margin-top:5px; }
 
-  /* bean card: every card the same height, photo or not — fixed-ratio image
-     (placeholder included) plus an info block with clamped lines and a floor */
-  .bean-info{ flex:1; min-height:124px; }
-  .bean-name{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-  .bean-roaster{ min-height:1.3em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .bean-recipe{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-  .bean-foot{ margin-top:auto; padding-top:8px; display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:14px; }
-
   /* freshness: a track with the peak window shaded, dot at today's days off roast */
   .fresh{ display:flex; align-items:center; gap:7px; min-width:0; }
   .fresh-track{ position:relative; width:40px; height:1px; background:var(--border); flex-shrink:0; }
@@ -445,16 +506,6 @@
   .rating i.on{ background:var(--c-coffee); border-color:var(--c-coffee); }
   .rating.lg{ gap:5px; }
   .rating.lg i{ width:8px; height:8px; }
-
-  .blend-head{ display:flex; justify-content:space-between; align-items:baseline; }
-  .add-bean, .recipe-book-link{
-    font-family:var(--mono); font-size:11px; color:var(--faint); text-decoration:underline; cursor:pointer;
-    background:none; border:none; padding:0;
-  }
-  .add-bean:hover, .recipe-book-link:hover{ color:var(--c-coffee); }
-  .coffee-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-shrink:0;
-    padding-bottom:16px; margin-bottom:18px; border-bottom:1px solid var(--border); }
-  .coffee-top .coffee-setup{ padding-bottom:0; margin-bottom:0; border-bottom:none; }
 
   /* detail modal additions */
   .bean-modal .k{ font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); }
@@ -638,25 +689,20 @@
       <span class="clock">--:--</span>
     </div>
 
-    <div class="coffee-top">
-      <div class="coffee-setup" id="coffee-setup"></div>
-      <button type="button" class="recipe-book-link" id="recipe-book-link">Recipe book</button>
-    </div>
-
-    <div class="blend-cols">
-      <div class="blend-col">
-        <div class="blend-head">
-          <div class="card-label" style="color:var(--c-coffee)">Specialty Blend <span class="todo-count" id="blend-count-specialty"></span></div>
-          <a class="add-bean" href="https://github.com/arshc1702/personal-dashboards/issues/new?template=coffee-bean.yml" target="_blank" rel="noopener">+ add bean</a>
+    <div class="cafe-wrap" id="cafe-wrap">
+      <div class="cafe" id="cafe" role="img" aria-label="Coffee bar: bean shelves, menu board, espresso machine and grinder">
+        <div class="shelf top bean-grid" id="bean-grid-specialty"></div>
+        <div class="shelf low bean-grid" id="bean-grid-house"></div>
+        <span class="shelf-tag top">Specialty <span id="blend-count-specialty"></span></span>
+        <span class="shelf-tag low">House <span id="blend-count-house"></span></span>
+        <div class="board" id="cafe-board">
+          <div class="board-head"><span class="board-title">On the bar</span><span class="board-kicker">Menu</span></div>
+          <div class="board-rule"></div>
+          <div class="board-list" id="board-list"><div class="board-empty">Loading…</div></div>
+          <button type="button" class="board-foot" id="recipe-book-link">Recipe book</button>
         </div>
-        <div class="bean-grid" id="bean-grid-specialty"><div class="bean-empty">Loading…</div></div>
-      </div>
-      <div class="blend-col">
-        <div class="blend-head">
-          <div class="card-label" style="color:var(--c-coffee)">House Blend <span class="todo-count" id="blend-count-house"></span></div>
-          <a class="add-bean" href="https://github.com/arshc1702/personal-dashboards/issues/new?template=coffee-bean-house.yml" target="_blank" rel="noopener">+ add bean</a>
-        </div>
-        <div class="bean-grid" id="bean-grid-house"><div class="bean-empty">Loading…</div></div>
+        <span class="gear-tag machine" id="gear-machine"></span>
+        <span class="gear-tag grinder" id="gear-grinder"></span>
       </div>
     </div>
   </section>
@@ -1531,20 +1577,32 @@ document.getElementById('coffee-connect')?.addEventListener('click', ()=>{
   }
 });
 
+// gear tags on the counter come from data/coffee-setup.json (Machine / Grinder rows)
 async function loadCoffeeSetup(){
-  const el = document.getElementById('coffee-setup');
-  if(!el) return;
   try{
     const res = await fetch('data/coffee-setup.json', {cache:'no-store'});
     const specs = await res.json();
-    el.innerHTML = (Array.isArray(specs) && specs.length)
-      ? specs.map(s => `<div class="spec"><div class="k">${escapeHtml(s.label)}</div><div class="v">${escapeHtml(s.value)}</div></div>`).join('')
-      : `<div style="font-family:var(--mono); font-size:11px; color:var(--faint);">Setup not added yet</div>`;
-  }catch(e){
-    el.innerHTML = '';
-  }
+    const find = k => (Array.isArray(specs) ? specs : []).find(s => (s.label||'').toLowerCase() === k)?.value || '';
+    document.getElementById('gear-machine').textContent = find('machine');
+    document.getElementById('gear-grinder').textContent = find('grinder');
+  }catch(e){ /* tags stay hidden */ }
 }
 loadCoffeeSetup();
+
+// fit the 3:2 scene inside the panel and set --u (1% of its height) for everything pinned on it
+const cafeEl = document.getElementById('cafe');
+const cafeWrap = document.getElementById('cafe-wrap');
+function fitCafe(){
+  if(!cafeEl || !cafeWrap) return;
+  const w = cafeWrap.clientWidth, h = cafeWrap.clientHeight;
+  if(!w || !h) return;
+  const width = Math.min(w, h * 1.5);
+  cafeEl.style.width = width + 'px';
+  cafeEl.style.setProperty('--u', (width / 1.5 / 100) + 'px');
+}
+if(window.ResizeObserver && cafeWrap) new ResizeObserver(fitCafe).observe(cafeWrap);
+window.addEventListener('resize', fitCafe);
+fitCafe();
 
 // ---- bean fields ----
 // Every field lives as a "### Label" section of the issue body (the shape the
@@ -1655,17 +1713,13 @@ const CUP_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 const CLOSE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>`;
 
 function beanCardHtml(b){
-  const img = b.image
-    ? `<img class="bean-img" src="${escapeHtml(b.image)}" alt="" draggable="false">`
-    : `<div class="bean-img-ph">${CUP_SVG}</div>`;
-  const recipe = recipeLine(b);
-  return `<div class="bean-card" data-number="${b.number}">
-    ${img}
-    <div class="bean-info">
-      <div class="bean-name">${escapeHtml(b.name)}</div>
-      <div class="bean-roaster">${escapeHtml(b.roaster || '')}</div>
-      ${recipe ? `<div class="bean-recipe">${escapeHtml(recipe)}</div>` : ''}
-      <div class="bean-foot">${freshMark(b)}${ratingDots(b.rating)}</div>
+  return `<div class="bean-card bag ${b.blend}" data-number="${b.number}" title="${escapeHtml([b.name, b.roaster].filter(Boolean).join(' · '))}">
+    <div class="bag-top"></div>
+    <div class="bag-valve"></div>
+    <div class="bag-label">
+      ${b.roaster ? `<span class="bag-roaster">${escapeHtml(b.roaster)}</span>` : ''}
+      <span class="bag-name">${escapeHtml(b.name)}</span>
+      ${ratingDots(b.rating)}
     </div>
   </div>`;
 }
@@ -1674,29 +1728,64 @@ function addBeanUrl(blend){
   return `https://github.com/${GH_REPO}/issues/new?template=${blend === 'house' ? 'coffee-bean-house.yml' : 'coffee-bean.yml'}`;
 }
 
+// how many bag slots fit on each painted plank (the last slot is "+ add" or "+N more")
+const SHELF_SLOTS = { specialty: 6, house: 5 };
+
+function shelfHtml(blend){
+  const beans = beansCache[blend];
+  const slots = SHELF_SLOTS[blend];
+  if(beans.length < slots){
+    return beans.map(beanCardHtml).join('') +
+      `<a class="bag-add" href="${addBeanUrl(blend)}" target="_blank" rel="noopener">+ add<br>bean</a>`;
+  }
+  const shown = beans.slice(0, slots - 1);
+  return shown.map(beanCardHtml).join('') +
+    `<button type="button" class="bag-more" data-open="recipe-book">+${beans.length - shown.length}<br>more</button>`;
+}
+
+function boardItemHtml(b){
+  const ratio = ratioString(b.dose, b.yield);
+  const f = freshness(b);
+  const sub = [recipeLine(b), f ? `${f.days}d off roast` : ''].filter(Boolean).join(' · ');
+  return `<button type="button" class="board-item" data-number="${b.number}">
+    <span class="bi-row"><span class="bi-name">${escapeHtml(b.name)}</span><span class="bi-lead"></span><span class="bi-ratio">${ratio}</span></span>
+    ${sub ? `<span class="bi-sub">${escapeHtml(sub)}</span>` : ''}
+  </button>`;
+}
+
 function renderCoffeePanel(errored){
-  const gridS = document.getElementById('bean-grid-specialty');
-  const gridH = document.getElementById('bean-grid-house');
-  const countS = document.getElementById('blend-count-specialty');
-  const countH = document.getElementById('blend-count-house');
-  if(!gridS || !gridH) return;
+  const shelfS = document.getElementById('bean-grid-specialty');
+  const shelfH = document.getElementById('bean-grid-house');
+  const board = document.getElementById('board-list');
+  if(!shelfS || !shelfH || !board) return;
   if(errored){
-    gridS.innerHTML = `<div class="bean-empty">Couldn't load — check connection</div>`;
-    gridH.innerHTML = '';
+    board.innerHTML = `<div class="board-empty">Couldn't load the beans. Check the connection.</div>`;
     return;
   }
+  const countS = document.getElementById('blend-count-specialty');
+  const countH = document.getElementById('blend-count-house');
   if(countS) countS.textContent = beansCache.specialty.length ? `· ${beansCache.specialty.length}` : '';
   if(countH) countH.textContent = beansCache.house.length ? `· ${beansCache.house.length}` : '';
-  gridS.innerHTML = beansCache.specialty.length
-    ? beansCache.specialty.map(beanCardHtml).join('')
-    : `<div class="bean-empty">No specialty beans on the shelf — <a href="${addBeanUrl('specialty')}" target="_blank" rel="noopener">add one</a>.</div>`;
-  gridH.innerHTML = beansCache.house.length
-    ? beansCache.house.map(beanCardHtml).join('')
-    : `<div class="bean-empty">Drag a bean here, or <a href="${addBeanUrl('house')}" target="_blank" rel="noopener">add a house bean</a>.</div>`;
+  shelfS.innerHTML = shelfHtml('specialty');
+  shelfH.innerHTML = shelfHtml('house');
+
+  // the menu board: what's on the shelf, best-rated first, as recipes
+  const onBar = [...beansCache.specialty, ...beansCache.house].sort(byRating);
+  board.innerHTML = onBar.length
+    ? onBar.slice(0, 4).map(boardItemHtml).join('')
+    : `<div class="board-empty">Nothing on the bar yet. <a href="${addBeanUrl('specialty')}" target="_blank" rel="noopener">Add a bean</a>.</div>`;
   const book = document.getElementById('recipe-book-link');
   if(book) book.textContent = `Recipe book · ${allBeans().length}`;
   attachBeanCardHandlers();
+  fitCafe();
 }
+
+// taps on the board and the "+N more" slot
+document.getElementById('cafe')?.addEventListener('click', (e)=>{
+  const item = e.target.closest('.board-item');
+  if(item){ openBeanModal(parseInt(item.dataset.number, 10)); return; }
+  if(e.target.closest('[data-open="recipe-book"]')) openRecipeBook();
+});
 
 async function loadCoffeeBeans(){
   try{
@@ -1720,6 +1809,7 @@ async function loadCoffeeBeans(){
     }
     renderCoffeePanel();
   }catch(e){
+    console.warn('Coffee: could not load beans', e);
     renderCoffeePanel(true);
   }
 }
