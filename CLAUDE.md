@@ -221,8 +221,11 @@ black area x942–1500 / y45–437, machine x1045–1345, grinder x1348–1480,
 counter top y815–935. If the picture is ever replaced, re-measure these
 and update the `.shelf` / `.board` / `.gear-tag` rules. Pieces:
 - **Bags on the shelves** — Specialty on the top shelf, House below
-  (kraft vs. ink bag, paper label with roaster, name, rating dots),
-  best-rated first. `SHELF_SLOTS` (6/5) is what fits; the last slot is
+  (kraft vs. ink bag), best-rated first. A bean with a photo shows it on
+  the bag's face with a name strip below; without one, a paper label.
+  The bag shows the **name only** (owner dropped the roaster from the bag)
+  and the **full name must always show**: it wraps, and `fitBagNames()`
+  shrinks the type until it fits — never clamp or ellipsis it. `SHELF_SLOTS` (6/5) is what fits; the last slot is
   "+ add bean" (that blend's issue form), or "+N more" (opens the Recipe
   book) when full. Drag a bag between shelves to re-blend; tap for the
   detail modal. Bags keep the `.bean-card` / `.bean-grid` classes that
@@ -254,14 +257,14 @@ pattern 3. A few things worth knowing before touching this:
   itself, decides which `.bean-grid` it was dropped on). Keep this
   approach for any future drag interaction in this app — don't swap in
   native `draggable` and assume it'll work on the iPad.
-- **Card face vs. detail modal:** the card shows name/roaster/recipe
-  (dose → yield · time · grind), a freshness mark and rating dots only;
-  tapping opens `#bean-modal-backdrop` with the full image, origin,
-  dose/yield/time/grind plus an auto-computed ratio (`ratioString()` —
-  never ask the user to type a ratio, derive it), roast date, notes, and
-  Edit / Finished bag actions. Keep that split — don't cram everything onto
-  the card face. Cards are equal height (fixed-ratio image + clamped info
-  block), photo or not.
+- **Bag face vs. recipe card:** the bag shows photo, name and rating dots
+  only; tapping opens the **recipe card** (`#bean-modal-backdrop`,
+  `.recipe-card`): photo on the left, and on the right name, roaster ·
+  origin, rating, a boxed Recipe row (dose/yield/time/grind plus an
+  auto-computed ratio — `ratioString()`, never ask the user to type a
+  ratio), roast date + freshness, notes, and Edit / Finished bag. Stacks
+  vertically on narrow screens. Keep that split — don't cram recipe detail
+  onto the bag.
 - **Freshness:** `freshMark()` draws days off roast on a 0–45 day track
   with the peak window (7–30 days, `REST_DAYS`/`PEAK_END_DAYS`) shaded;
   "resting" before, "past peak" after. Roast dates parse as ISO or AU

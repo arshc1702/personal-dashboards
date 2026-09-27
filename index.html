@@ -420,10 +420,13 @@
     padding:calc(var(--u) * .4) calc(var(--u) * .3); text-align:center; min-height:0; overflow:hidden;
   }
   .bag.house .bag-label{ background:var(--bg); }
-  .bag-roaster{ font-family:var(--mono); font-size:calc(var(--u) * .85); letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
-    max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .bag-name{ font-family:var(--display); font-style:italic; font-weight:500; font-size:calc(var(--u) * 1.55); line-height:1.1; color:var(--text);
-    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  /* the full name always shows: it wraps instead of clipping (the photo gives up the room) */
+  .bag-name{ font-family:var(--display); font-style:italic; font-weight:500; font-size:calc(var(--u) * 1.5); line-height:1.1; color:var(--text);
+    overflow-wrap:anywhere; hyphens:auto; }
+  /* bag with the bean's own photo on its face, name strip underneath */
+  .bag-photo{ align-self:stretch; flex:1; min-height:0; width:100%; object-fit:cover; display:block; pointer-events:none; background:var(--bg); }
+  .bag.has-photo .bag-label{ flex:none; max-height:55%; margin:0; border-radius:0; padding:calc(var(--u) * .45) calc(var(--u) * .35) calc(var(--u) * .5); }
+  .bag.has-photo .bag-name{ font-size:calc(var(--u) * 1.3); }
   .bag .rating{ gap:calc(var(--u) * .2); }
   .bag .rating i{ width:calc(var(--u) * .5); height:calc(var(--u) * .5); }
   .bag-add, .bag-more{
@@ -511,6 +514,18 @@
   .bean-modal .k{ font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); }
   .bean-modal .v{ font-family:var(--mono); font-size:16px; color:var(--text); margin-top:4px; }
   .bean-stats{ display:flex; gap:26px; flex-wrap:wrap; padding-top:14px; border-top:1px solid var(--border); }
+  /* tapping a bag opens its recipe card: photo on the left, recipe + info on the right */
+  .bean-modal.recipe-card{ max-width:780px; display:flex; }
+  .rc-photo{ flex:0 0 40%; min-height:380px; background:var(--bg); }
+  .rc-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .recipe-card .bean-modal-body{ flex:1; min-width:0; overflow-y:auto; }
+  .rc-recipe{ background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:14px 16px 16px; display:flex; flex-direction:column; gap:12px; }
+  .rc-recipe .bean-stats{ border-top:none; padding-top:0; gap:22px; }
+  .rc-recipe .v{ font-size:19px; }
+  @media (max-width:640px){
+    .bean-modal.recipe-card{ flex-direction:column; }
+    .rc-photo{ flex:none; min-height:0; height:220px; }
+  }
   .bean-fresh-row{ display:flex; align-items:flex-end; gap:26px; flex-wrap:wrap; }
   .bean-fresh-row .fresh{ padding-bottom:5px; }
   .bean-actions{ display:flex; justify-content:space-between; align-items:center; padding-top:6px; }
@@ -1598,6 +1613,7 @@ function fitCafe(){
   const width = Math.min(w, h * 1.5);
   cafeEl.style.width = width + 'px';
   cafeEl.style.setProperty('--u', (width / 1.5 / 100) + 'px');
+  if(typeof fitBagNames === 'function') fitBagNames();
 }
 if(window.ResizeObserver && cafeWrap) new ResizeObserver(fitCafe).observe(cafeWrap);
 window.addEventListener('resize', fitCafe);
@@ -1712,15 +1728,32 @@ const CUP_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 const CLOSE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>`;
 
 function beanCardHtml(b){
-  return `<div class="bean-card bag ${b.blend}" data-number="${b.number}" title="${escapeHtml([b.name, b.roaster].filter(Boolean).join(' · '))}">
+  return `<div class="bean-card bag ${b.blend}${b.image ? ' has-photo' : ''}" data-number="${b.number}" title="${escapeHtml([b.name, b.roaster].filter(Boolean).join(' · '))}">
     <div class="bag-top"></div>
-    <div class="bag-valve"></div>
+    ${b.image
+      ? `<img class="bag-photo" src="${escapeHtml(b.image)}" alt="" draggable="false" loading="lazy">`
+      : `<div class="bag-valve"></div>`}
     <div class="bag-label">
-      ${b.roaster ? `<span class="bag-roaster">${escapeHtml(b.roaster)}</span>` : ''}
       <span class="bag-name">${escapeHtml(b.name)}</span>
       ${ratingDots(b.rating)}
     </div>
   </div>`;
+}
+
+// shrink a long bean name until it fits its label, so the full name always shows
+function fitBagNames(){
+  document.querySelectorAll('.bag').forEach(bag => {
+    const label = bag.querySelector('.bag-label');
+    const name = bag.querySelector('.bag-name');
+    if(!label || !name) return;
+    name.style.fontSize = '';
+    let size = parseFloat(getComputedStyle(name).fontSize);
+    const min = size * 0.55;
+    while((label.scrollHeight > label.clientHeight + 0.5 || name.scrollWidth > label.clientWidth + 0.5) && size > min){
+      size -= 0.5;
+      name.style.fontSize = size + 'px';
+    }
+  });
 }
 
 function addBeanUrl(blend){
@@ -1762,6 +1795,7 @@ function renderCoffeePanel(errored){
   if(book) book.textContent = `Recipe book · ${allBeans().length}`;
   attachBeanCardHandlers();
   fitCafe();
+  fitBagNames();
 }
 
 // the "+N more" slot on a full shelf
@@ -1824,9 +1858,9 @@ function openBeanModal(number){
   const f = freshness(bean);
   const stat = (k, v) => v ? `<div><div class="k">${k}</div><div class="v">${escapeHtml(v)}</div></div>` : '';
   backdrop.innerHTML = `
-    <div class="bean-modal">
+    <div class="bean-modal recipe-card">
       <div class="bean-modal-close" id="bean-modal-close">${CLOSE_SVG}</div>
-      ${bean.image ? `<img class="bean-modal-img" src="${escapeHtml(bean.image)}" alt="">` : ''}
+      ${bean.image ? `<div class="rc-photo"><img src="${escapeHtml(bean.image)}" alt="${escapeHtml(bean.name)} bag"></div>` : ''}
       <div class="bean-modal-body">
         <div>
           ${bean.finished ? `<div class="card-label" style="margin-bottom:6px;">Finished bag</div>` : ''}
@@ -1835,9 +1869,12 @@ function openBeanModal(number){
           ${bean.rating ? `<div style="margin-top:10px;">${ratingDots(bean.rating, 'lg')}</div>` : ''}
         </div>
         ${(bean.dose || bean.yield || bean.time || bean.grind) ? `
-        <div class="bean-stats">
-          ${stat('Dose', bean.dose)}${stat('Yield', bean.yield)}${stat('Time', bean.time)}
-          ${stat('Ratio', ratio)}${stat('Grind', bean.grind)}
+        <div class="rc-recipe">
+          <div class="card-label" style="color:var(--c-coffee)">Recipe</div>
+          <div class="bean-stats">
+            ${stat('Dose', bean.dose)}${stat('Yield', bean.yield)}${stat('Time', bean.time)}
+            ${stat('Ratio', ratio)}${stat('Grind', bean.grind)}
+          </div>
         </div>` : ''}
         ${f ? `<div class="bean-fresh-row">
           <div><div class="k">Roasted</div><div class="v">${escapeHtml(bean.roastDate)}</div></div>
