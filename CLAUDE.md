@@ -227,11 +227,15 @@ and update the `.shelf` / `.board` / `.gear-tag` rules. Pieces:
   book) when full. Drag a bag between shelves to re-blend; tap for the
   detail modal. Bags keep the `.bean-card` / `.bean-grid` classes that
   `attachBeanCardHandlers()` uses.
-- **The chalkboard** is the live menu: "On the bar" lists the shelf's
-  beans as recipes (name, ratio, dose → yield · time · grind, days off
-  roast), up to 4, tap one for its detail; the **Recipe book** link (every
-  bean on the shelf and every finished bag) sits at its foot. No invented
-  drinks — it only shows real beans.
+- **The chalkboard** is the owner's drinks menu, "On the bar": three
+  columns (White / Black / Special) read from `data/coffee-menu.json` — a
+  hand-edited `[{section, items:[{name, desc}]}]` file the owner wrote the
+  content for (desc = shot + milk/water amount). Edit that file to change
+  the menu; don't invent drinks into it. It fits 5 drinks per column on
+  the board — more needs smaller type or fewer words. The **Recipe book**
+  link (every bean on the shelf and every finished bag, with its recipe)
+  sits in the board's title row; bean recipes live there and on the bags,
+  not on the board.
 - **Gear tags** on the counter under the machine and grinder, from
   `data/coffee-setup.json` (the `Machine` and `Grinder` rows of a small
   hand-edited `{label, value}` array — edit it directly).

@@ -436,24 +436,24 @@
   /* the chalkboard (black area x942–1500, y45–437): live menu of what's on the shelf */
   .board{
     position:absolute; left:61.3%; top:4.4%; width:36.3%; height:38.3%; box-sizing:border-box;
-    padding:calc(var(--u) * 2.4) calc(var(--u) * 3) calc(var(--u) * 1.8);
-    display:flex; flex-direction:column; gap:calc(var(--u) * 1.4); color:rgba(250,248,244,.92);
+    padding:calc(var(--u) * 1.8) calc(var(--u) * 2.8) calc(var(--u) * 1.4);
+    display:flex; flex-direction:column; gap:calc(var(--u) * 1); color:rgba(250,248,244,.92);
   }
   .board-head{ display:flex; justify-content:space-between; align-items:baseline; }
-  .board-title{ font-family:var(--display); font-style:italic; font-size:calc(var(--u) * 3.6); line-height:1; }
+  .board-title{ font-family:var(--display); font-style:italic; font-size:calc(var(--u) * 2.8); line-height:1; }
   .board-kicker{ font-family:var(--mono); font-size:calc(var(--u) * 1); letter-spacing:.16em; text-transform:uppercase; color:rgba(250,248,244,.5); }
   .board-rule{ height:1px; background:rgba(250,248,244,.22); flex-shrink:0; }
-  .board-list{ flex:1; min-height:0; display:flex; flex-direction:column; gap:calc(var(--u) * 1.3); overflow:hidden; }
-  .board-item{ display:flex; flex-direction:column; gap:calc(var(--u) * .35); background:none; border:none; padding:0; text-align:left; cursor:pointer; color:inherit; font:inherit; }
-  .bi-row{ display:flex; align-items:baseline; gap:calc(var(--u) * .9); }
-  .bi-name{ font-family:var(--display); font-style:italic; font-size:calc(var(--u) * 2.3); line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .bi-lead{ flex:1; min-width:calc(var(--u) * 2); border-bottom:1px dotted rgba(250,248,244,.35); transform:translateY(calc(var(--u) * -.5)); }
-  .bi-ratio{ font-family:var(--mono); font-size:calc(var(--u) * 1.35); color:rgba(250,248,244,.8); }
-  .bi-sub{ font-family:var(--mono); font-size:calc(var(--u) * 1.25); color:rgba(250,248,244,.55); }
+  .board-menu{ flex:1; min-height:0; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:calc(var(--u) * 2.2); overflow:hidden; }
+  .board-sec{ display:flex; flex-direction:column; gap:calc(var(--u) * .75); min-width:0; }
+  .board-sec-name{ font-family:var(--mono); font-size:calc(var(--u) * 1.05); letter-spacing:.18em; text-transform:uppercase; color:rgba(250,248,244,.55);
+    padding-bottom:calc(var(--u) * .4); border-bottom:1px solid rgba(250,248,244,.18); }
+  .board-drink{ display:flex; flex-direction:column; gap:calc(var(--u) * .15); }
+  .bd-name{ font-family:var(--display); font-style:italic; font-size:calc(var(--u) * 1.65); line-height:1.1; }
+  .bd-desc{ font-family:var(--mono); font-size:calc(var(--u) * .95); line-height:1.35; color:rgba(250,248,244,.58); }
   .board-empty{ font-family:var(--display); font-style:italic; font-size:calc(var(--u) * 1.9); color:rgba(250,248,244,.6); }
   .board-empty a{ color:inherit; }
   .board-foot{
-    align-self:flex-start; background:none; border:none; padding:0; cursor:pointer;
+    background:none; border:none; padding:0; cursor:pointer;
     font-family:var(--mono); font-size:calc(var(--u) * 1.15); letter-spacing:.08em; color:rgba(250,248,244,.7); text-decoration:underline;
   }
 
@@ -696,10 +696,9 @@
         <span class="shelf-tag top">Specialty <span id="blend-count-specialty"></span></span>
         <span class="shelf-tag low">House <span id="blend-count-house"></span></span>
         <div class="board" id="cafe-board">
-          <div class="board-head"><span class="board-title">On the bar</span><span class="board-kicker">Menu</span></div>
+          <div class="board-head"><span class="board-title">On the bar</span><button type="button" class="board-foot" id="recipe-book-link">Recipe book</button></div>
           <div class="board-rule"></div>
-          <div class="board-list" id="board-list"><div class="board-empty">Loading…</div></div>
-          <button type="button" class="board-foot" id="recipe-book-link">Recipe book</button>
+          <div class="board-menu" id="board-menu"><div class="board-empty">Loading the menu…</div></div>
         </div>
         <span class="gear-tag machine" id="gear-machine"></span>
         <span class="gear-tag grinder" id="gear-grinder"></span>
@@ -1743,23 +1742,13 @@ function shelfHtml(blend){
     `<button type="button" class="bag-more" data-open="recipe-book">+${beans.length - shown.length}<br>more</button>`;
 }
 
-function boardItemHtml(b){
-  const ratio = ratioString(b.dose, b.yield);
-  const f = freshness(b);
-  const sub = [recipeLine(b), f ? `${f.days}d off roast` : ''].filter(Boolean).join(' · ');
-  return `<button type="button" class="board-item" data-number="${b.number}">
-    <span class="bi-row"><span class="bi-name">${escapeHtml(b.name)}</span><span class="bi-lead"></span><span class="bi-ratio">${ratio}</span></span>
-    ${sub ? `<span class="bi-sub">${escapeHtml(sub)}</span>` : ''}
-  </button>`;
-}
-
 function renderCoffeePanel(errored){
   const shelfS = document.getElementById('bean-grid-specialty');
   const shelfH = document.getElementById('bean-grid-house');
-  const board = document.getElementById('board-list');
-  if(!shelfS || !shelfH || !board) return;
+  if(!shelfS || !shelfH) return;
   if(errored){
-    board.innerHTML = `<div class="board-empty">Couldn't load the beans. Check the connection.</div>`;
+    shelfS.innerHTML = `<span class="bag-add">Couldn't<br>load beans</span>`;
+    shelfH.innerHTML = '';
     return;
   }
   const countS = document.getElementById('blend-count-specialty');
@@ -1769,23 +1758,33 @@ function renderCoffeePanel(errored){
   shelfS.innerHTML = shelfHtml('specialty');
   shelfH.innerHTML = shelfHtml('house');
 
-  // the menu board: what's on the shelf, best-rated first, as recipes
-  const onBar = [...beansCache.specialty, ...beansCache.house].sort(byRating);
-  board.innerHTML = onBar.length
-    ? onBar.slice(0, 4).map(boardItemHtml).join('')
-    : `<div class="board-empty">Nothing on the bar yet. <a href="${addBeanUrl('specialty')}" target="_blank" rel="noopener">Add a bean</a>.</div>`;
   const book = document.getElementById('recipe-book-link');
   if(book) book.textContent = `Recipe book · ${allBeans().length}`;
   attachBeanCardHandlers();
   fitCafe();
 }
 
-// taps on the board and the "+N more" slot
+// the "+N more" slot on a full shelf
 document.getElementById('cafe')?.addEventListener('click', (e)=>{
-  const item = e.target.closest('.board-item');
-  if(item){ openBeanModal(parseInt(item.dataset.number, 10)); return; }
   if(e.target.closest('[data-open="recipe-book"]')) openRecipeBook();
 });
+
+// the chalkboard: the owner's drinks menu, hand-edited in data/coffee-menu.json
+async function loadCoffeeMenu(){
+  const el = document.getElementById('board-menu');
+  if(!el) return;
+  try{
+    const res = await fetch('data/coffee-menu.json', {cache:'no-store'});
+    const menu = await res.json();
+    el.innerHTML = menu.map(sec => `<div class="board-sec">
+      <div class="board-sec-name">${escapeHtml(sec.section)}</div>
+      ${(sec.items||[]).map(d => `<div class="board-drink"><span class="bd-name">${escapeHtml(d.name)}</span>${d.desc ? `<span class="bd-desc">${escapeHtml(d.desc)}</span>` : ''}</div>`).join('')}
+    </div>`).join('');
+  }catch(e){
+    el.innerHTML = `<div class="board-empty">Menu not available</div>`;
+  }
+}
+loadCoffeeMenu();
 
 async function loadCoffeeBeans(){
   try{
