@@ -227,9 +227,15 @@ counter top y815–935. If the picture is ever replaced, re-measure these
 and update the `.shelf` / `.board` / `.gear-tag` rules. Pieces:
 - **Bags on the shelves** — Specialty on the top shelf, House below,
   best-rated first. Drawn as stand-up coffee pouches (kraft for
-  specialty, ink for house): crimped heat seal, one-way valve, inset
-  side-crease shading, gusset line, contact shadow. The front label is a
-  sticker holding the bean's photo (if any) with the name under it.
+  specialty, ink for house), **tapered — narrow at the sealed top, full
+  width at the base** (owner asked for real bag shape, not a box):
+  crimped heat seal, one-way valve, side-fold shading, gusset line. The
+  front label is a sticker holding the bean's photo (if any) with the
+  name under it. Structure matters: `.bag` is the draggable wrapper and
+  carries the shadow as a `filter: drop-shadow` on itself; `.bag-body`
+  inside is `clip-path`-tapered. Don't move the clip onto `.bag` (it would
+  cut off the shadow) and don't put the filter on `.shelf` (a filter on an
+  ancestor re-anchors the `position:fixed` drag).
   The bag shows the **name only** (owner dropped the roaster from the bag)
   and the **full name must always show**: it wraps, and `fitBagNames()`
   shrinks the type until it fits — never clamp or ellipsis it. `SHELF_SLOTS` (6/5) is what fits; the last slot is
