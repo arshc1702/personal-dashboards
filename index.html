@@ -190,67 +190,183 @@
     font-family:var(--mono); font-size:11px; letter-spacing:.05em; text-transform:none;
     color:var(--faint); text-decoration:underline; cursor:pointer; margin-left:6px;
   }
-  .todos-grid{
-    flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:18px; min-height:0;
+  /* the ledger — the whole Todos panel is one paper sheet: Today's three on
+     top, the three category columns below, a done-this-week line at the foot */
+  .ledger{
+    flex:1; min-height:0; margin-top:18px;
+    display:flex; flex-direction:column;
+    padding:22px 26px 16px; overflow:hidden;
   }
-  .todo-card{ padding:20px; display:flex; flex-direction:column; gap:16px; min-height:0; }
-  .todo-count{ color:var(--faint); font-weight:400; }
+  .ledger-head{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-shrink:0; }
+  .ledger-label{ font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); }
+  .ledger-meta{ font-family:var(--mono); font-size:11px; color:var(--faint); }
+
+  /* every task (Today slot or column row) is a .todo-item carrying --cat */
+  .todo-item{
+    position:relative; cursor:pointer;
+    -webkit-user-select:none; user-select:none; -webkit-touch-callout:none;
+    border-radius:8px; transition:background-color .15s, opacity .15s;
+  }
+  .todo-item.held{ background:color-mix(in srgb, var(--cat) 9%, transparent); }
+  .todo-item.drag-src{ opacity:.22; }
+  .today-slot.drag-src{ display:none; }
+  .ledger.dragging .today-hint{ display:none; }
+  .todo-item.leaving{ opacity:0; transform:translateX(5px); transition:opacity .22s ease, transform .22s ease; }
+
+  /* Today's three — headline slots split by hairlines */
+  .today-slots{
+    display:grid; grid-template-columns:repeat(3, minmax(0,1fr));
+    margin:14px 0 0; flex-shrink:0; min-height:118px;
+  }
+  .today-slot{ display:flex; gap:12px; padding:6px 22px 14px; border-left:1px solid var(--border); border-radius:0; }
+  .today-slot:first-child{ padding-left:0; border-left:none; }
+  .today-slot.swap{ opacity:.35; }
+  .today-slot .check{ margin-top:6px; }
+  .today-body{ flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
+  .today-cat{ font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--cat); }
+  .today-title{
+    font-family:var(--display); font-style:italic; font-weight:500;
+    font-size:23px; line-height:1.24; color:var(--text); text-wrap:balance;
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+    transition:color .2s;
+  }
+  .today-hint{
+    display:flex; align-items:center; padding:6px 22px 14px;
+    border-left:1px solid var(--border);
+    font-family:var(--display); font-style:italic; font-size:16px; color:var(--faint); line-height:1.4;
+  }
+  .today-hint:first-child{ padding-left:0; border-left:none; }
+  .today-slots > .today-hint:nth-child(1){ grid-column:span 3; }
+  .today-slots > .today-hint:nth-child(2){ grid-column:span 2; }
+
+  .ledger-rule{ height:1px; background:var(--text); opacity:.85; margin:6px 0 0; flex-shrink:0; }
+
+  /* category columns */
+  .ledger-cols{ flex:1; min-height:0; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); }
+  .ledger-col{ display:flex; flex-direction:column; gap:12px; min-height:0; padding:16px 22px 12px; border-left:1px solid var(--border); }
+  .ledger-col:first-child{ padding-left:0; border-left:none; }
+  .ledger-col:last-child{ padding-right:0; }
+  .col-head{ display:flex; justify-content:space-between; align-items:baseline; }
+  .col-name{ font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--cat); }
+  .col-count{ font-family:var(--mono); font-size:11px; color:var(--faint); }
+  .col-list{ flex:1; min-height:40px; overflow-y:auto; display:flex; flex-direction:column; gap:2px; }
 
   /* ledger-style add line: an underline, not a boxed field */
   .todo-add{
-    display:flex; gap:8px; flex-shrink:0;
-    border-bottom:1px solid var(--border); padding-bottom:9px;
+    display:flex; flex-shrink:0;
+    border-bottom:1px solid var(--border); padding-bottom:8px;
     transition:border-color .15s;
   }
-  .todo-add:focus-within{ border-color:var(--accent); }
+  .todo-add:focus-within{ border-color:var(--cat); }
   .todo-add input{
     flex:1; width:100%; font-family:var(--sans); font-size:14px; color:var(--text);
     background:transparent; border:none; outline:none; padding:2px 0;
   }
   .todo-add input::placeholder{ color:var(--faint); font-style:italic; }
 
-  .todo-list{ display:flex; flex-direction:column; gap:14px; overflow-y:auto; min-height:0; }
-  .todo-rest{ display:flex; flex-direction:column; gap:10px; }
-  .todo-rule{ height:1px; background:var(--border); }
-
-  .todo-row{ display:flex; align-items:flex-start; gap:10px; cursor:pointer; }
-  .todo-row span{ font-size:14px; color:var(--text); line-height:1.4; flex:1; transition:color .2s; }
-  .todo-age{ font-family:var(--mono); font-size:10px; color:var(--faint); flex:none !important; margin-top:3px; }
-  .todo-empty{ font-family:var(--mono); font-size:11px; color:var(--faint); }
-
-  /* the "next up" hero item — oldest open task, journal-entry treatment */
-  .todo-hero{ display:flex; align-items:flex-start; gap:11px; cursor:pointer; }
-  .todo-hero-body{ flex:1; }
-  .todo-hero-tag{
-    font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase;
-    color:var(--accent);
-  }
-  .todo-hero-title{
-    font-family:var(--display); font-style:italic; font-weight:500;
-    font-size:20px; line-height:1.28; color:var(--text); margin-top:4px;
-    transition:color .2s;
+  .col-row{ display:flex; align-items:flex-start; gap:10px; padding:7px 6px 7px 0; }
+  .col-row .t{ flex:1; min-width:0; font-size:14px; line-height:1.4; color:var(--text); transition:color .2s; }
+  .todo-empty{ font-family:var(--mono); font-size:11px; color:var(--faint); padding-top:6px; }
+  .todo-more{
+    align-self:flex-start; background:none; border:none; padding:6px 0 0; cursor:pointer;
+    font-family:var(--mono); font-size:11px; color:var(--faint); text-decoration:underline;
   }
 
-  /* checkbox with a hand-drawn-feeling checkmark that draws in on complete */
+  /* waiting-time mark: a short track, the dot slides right as a task waits
+     (log scale: today → ~1 month+ at the far end) */
+  .age{ display:inline-flex; align-items:center; gap:7px; flex-shrink:0; margin-top:4px; }
+  .age-track{ position:relative; width:34px; height:1px; background:var(--border); }
+  .age-fill{ position:absolute; left:0; top:0; height:1px; background:var(--cat); opacity:.45; }
+  .age-dot{ position:absolute; top:-2.5px; width:6px; height:6px; margin-left:-3px; border-radius:50%; background:var(--cat); }
+  .age-txt{ font-family:var(--mono); font-size:10px; color:var(--faint); min-width:22px; }
+  .today-body .age{ margin-top:0; }
+  .today-body .age-track{ width:56px; }
+
+  /* checkbox with a checkmark that draws in on complete */
   .check{
     width:17px; height:17px; border-radius:5px; border:1.4px solid var(--faint);
-    flex-shrink:0; margin-top:3px; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center;
     transition:background .2s, border-color .2s;
   }
-  .todo-hero .check{ margin-top:2px; }
-  .todo-row:hover .check{ border-color:var(--accent); }
+  .todo-item:hover .check{ border-color:var(--cat); }
   .check svg{ width:11px; height:11px; overflow:visible; }
   .check svg path{
     fill:none; stroke:#fff; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;
     stroke-dasharray:20; stroke-dashoffset:20; transition:stroke-dashoffset .22s ease;
   }
-  .todo-row.checking .check{ background:var(--accent); border-color:var(--accent); }
-  .todo-row.checking .check svg path{ stroke-dashoffset:0; }
-  .todo-row.checking span,
-  .todo-row.checking .todo-hero-title{ color:var(--faint); text-decoration:line-through; }
-  .todo-row.leaving{
-    opacity:0; transform:translateX(5px);
-    transition:opacity .22s ease, transform .22s ease;
+  .todo-item.checking .check{ background:var(--cat); border-color:var(--cat); }
+  .todo-item.checking .check svg path{ stroke-dashoffset:0; }
+  .todo-item.checking .t,
+  .todo-item.checking .today-title{ color:var(--faint); text-decoration:line-through; }
+
+  /* drag: a floating copy follows the finger, a mark shows where it lands */
+  .todo-ghost{
+    position:fixed; z-index:300; pointer-events:none; margin:0;
+    background:var(--surface); border:1px solid var(--border); border-radius:10px;
+    box-shadow:0 14px 30px rgba(43,38,32,.18); padding-left:10px; padding-right:10px;
+  }
+  .drop-mark{ height:2px; border-radius:1px; background:var(--cat, var(--accent)); margin:2px 0; flex-shrink:0; }
+  .drop-mark.slot{
+    height:auto; margin:6px 10px 14px; border-radius:8px;
+    background:color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+
+  /* done-this-week line at the sheet's foot */
+  .done-strip{
+    flex-shrink:0; display:flex; align-items:baseline; gap:14px; overflow:hidden;
+    padding-top:12px; border-top:1px solid var(--border); white-space:nowrap;
+  }
+  .done-label{ font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); flex-shrink:0; }
+  .done-items{ display:flex; gap:16px; overflow:hidden; min-width:0; }
+  .done-item{ display:inline-flex; align-items:baseline; gap:6px; font-size:13px; color:var(--faint); flex-shrink:0; }
+  .done-item s{ text-decoration-thickness:1px; }
+  .done-item i{ width:5px; height:5px; border-radius:50%; background:var(--cat); opacity:.6; display:inline-block; transform:translateY(-1px); }
+
+  /* undo toast — sits just above the tick-dial */
+  #toast{
+    position:fixed; left:50%; bottom:46px; transform:translate(-50%, 8px); z-index:150;
+    display:flex; align-items:center; gap:16px; max-width:calc(100% - 32px);
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:9px 14px; font-family:var(--mono); font-size:12px; color:var(--muted);
+    opacity:0; pointer-events:none; transition:opacity .2s, transform .2s;
+  }
+  #toast.show{ opacity:1; pointer-events:auto; transform:translate(-50%, 0); }
+  #toast-msg{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:360px; }
+  #toast button{
+    background:none; border:none; padding:0; cursor:pointer; flex-shrink:0;
+    font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--text); text-decoration:underline;
+  }
+
+  /* edit-task sheet (reuses the bean modal backdrop/shell) */
+  .todo-edit{ padding:24px 26px 26px; display:flex; flex-direction:column; gap:18px; }
+  .todo-edit input{
+    width:100%; font-family:var(--display); font-style:italic; font-size:21px; color:var(--text);
+    background:transparent; border:none; border-bottom:1px solid var(--border); outline:none; padding:4px 0 8px;
+  }
+  .todo-edit input:focus{ border-color:var(--text); }
+  .cat-chips{ display:flex; gap:8px; flex-wrap:wrap; }
+  .cat-chip{
+    font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+    padding:6px 11px; border-radius:999px; cursor:pointer; background:transparent;
+    border:1px solid var(--border); color:var(--muted);
+  }
+  .cat-chip.on{ border-color:var(--cat); color:var(--cat); background:color-mix(in srgb, var(--cat) 12%, transparent); }
+  .todo-edit-actions{ display:flex; justify-content:space-between; align-items:center; padding-top:4px; }
+  .todo-edit-actions button{
+    font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer;
+    background:none; border:none; padding:0; color:var(--muted); text-decoration:underline;
+  }
+  .todo-edit-actions .save{ text-decoration:none; color:var(--surface); background:var(--text); padding:8px 16px; border-radius:999px; }
+
+  @media (max-width:760px){
+    .ledger{ overflow-y:auto; padding:18px 18px 14px; }
+    .today-slots, .ledger-cols{ grid-template-columns:1fr; }
+    .today-slot, .today-hint, .ledger-col{ padding-left:0; padding-right:0; border-left:none; }
+    .today-slot + .today-slot, .today-slot + .today-hint{ border-top:1px solid var(--border); padding-top:12px; }
+    .today-slots > .today-hint{ grid-column:auto !important; }
+    .ledger-col + .ledger-col{ border-top:1px solid var(--border); }
+    .ledger-cols{ flex:none; }
+    .col-list{ overflow:visible; }
   }
 
   /* COFFEE panel — bean catalog */
@@ -394,22 +510,32 @@
       </span>
       <span class="clock">--:--</span>
     </div>
-    <div class="todos-grid">
-      <div class="card todo-card" style="--accent:var(--c-productivity)">
-        <div class="card-label" style="color:var(--c-productivity)">Work <span class="todo-count" id="todo-count-work"></span></div>
-        <form class="todo-add" data-cat="work"><input type="text" placeholder="+ add to work" maxlength="200"></form>
-        <div class="todo-list" id="todo-list-work"><div class="todo-empty">Loading…</div></div>
+
+    <div class="card ledger" id="ledger">
+      <div class="ledger-head">
+        <span class="ledger-label">Today's three</span>
+        <span class="ledger-meta tnum" id="ledger-meta"></span>
       </div>
-      <div class="card todo-card" style="--accent:var(--c-padel)">
-        <div class="card-label" style="color:var(--c-padel)">Padel Club <span class="todo-count" id="todo-count-padel"></span></div>
-        <form class="todo-add" data-cat="padel"><input type="text" placeholder="+ add to padel club" maxlength="200"></form>
-        <div class="todo-list" id="todo-list-padel"><div class="todo-empty">Loading…</div></div>
+      <div class="today-slots" id="today-slots"><div class="today-hint">Loading…</div></div>
+      <div class="ledger-rule"></div>
+      <div class="ledger-cols">
+        <div class="ledger-col" style="--cat:var(--c-productivity)">
+          <div class="col-head"><span class="col-name">Work</span><span class="col-count tnum" id="todo-count-work"></span></div>
+          <form class="todo-add" data-cat="work"><input type="text" id="todo-add-work" placeholder="+ add to work" maxlength="200" aria-label="Add a work task"></form>
+          <div class="col-list" data-cat="work" id="todo-list-work"></div>
+        </div>
+        <div class="ledger-col" style="--cat:var(--c-padel)">
+          <div class="col-head"><span class="col-name">Padel Club</span><span class="col-count tnum" id="todo-count-padel"></span></div>
+          <form class="todo-add" data-cat="padel"><input type="text" id="todo-add-padel" placeholder="+ add to padel club" maxlength="200" aria-label="Add a padel club task"></form>
+          <div class="col-list" data-cat="padel" id="todo-list-padel"></div>
+        </div>
+        <div class="ledger-col" style="--cat:var(--c-lifeadmin)">
+          <div class="col-head"><span class="col-name">Life Admin</span><span class="col-count tnum" id="todo-count-lifeadmin"></span></div>
+          <form class="todo-add" data-cat="lifeadmin"><input type="text" id="todo-add-lifeadmin" placeholder="+ add to life admin" maxlength="200" aria-label="Add a life admin task"></form>
+          <div class="col-list" data-cat="lifeadmin" id="todo-list-lifeadmin"></div>
+        </div>
       </div>
-      <div class="card todo-card" style="--accent:var(--c-lifeadmin)">
-        <div class="card-label" style="color:var(--c-lifeadmin)">Life Admin <span class="todo-count" id="todo-count-lifeadmin"></span></div>
-        <form class="todo-add" data-cat="lifeadmin"><input type="text" placeholder="+ add to life admin" maxlength="200"></form>
-        <div class="todo-list" id="todo-list-lifeadmin"><div class="todo-empty">Loading…</div></div>
-      </div>
+      <div class="done-strip" id="done-strip"></div>
     </div>
   </section>
 
@@ -530,6 +656,7 @@
 
 <div class="bean-modal-backdrop" id="bean-modal-backdrop"></div>
 
+<div id="toast" role="status"><span id="toast-msg"></span><button id="toast-undo" type="button">Undo</button></div>
 <div id="dial"></div>
 <div id="voiceLabel"></div>
 <button id="mic" aria-label="Voice command">🎙</button>
@@ -612,9 +739,9 @@ setInterval(loadWeather, 5*60*1000);
 // todos data (GitHub Issues as the store — see CLAUDE.md "Interactive write" pattern)
 const GH_REPO = 'arshc1702/personal-dashboards';
 const TODO_CATEGORIES = [
-  { key:'work',      label:'category:work',       name:'work' },
-  { key:'padel',     label:'category:padel',      name:'padel club' },
-  { key:'lifeadmin', label:'category:life-admin', name:'life admin' },
+  { key:'work',      label:'category:work',       name:'work',       title:'Work',       color:'--c-productivity' },
+  { key:'padel',     label:'category:padel',      name:'padel club', title:'Padel Club', color:'--c-padel' },
+  { key:'lifeadmin', label:'category:life-admin', name:'life admin', title:'Life Admin', color:'--c-lifeadmin' },
 ];
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -625,7 +752,7 @@ function clearGhToken(){ localStorage.removeItem('panel_gh_token'); }
 function ensureToken(){
   let t = ghToken();
   if(t) return t;
-  t = prompt('Paste a GitHub personal access token (fine-grained, scoped to just this repo\'s Issues: Read and write) to add or complete tasks:');
+  t = prompt('Paste a GitHub personal access token (fine-grained, scoped to just this repo\'s Issues: Read and write) to add, move or complete tasks and beans:');
   if(t) setGhToken(t);
   return ghToken();
 }
@@ -642,10 +769,77 @@ async function ghFetch(path, options={}){
   return fetch(`https://api.github.com/repos/${GH_REPO}${path}`, Object.assign({}, options, {headers}));
 }
 
-let todosCache = { work:[], padel:[], lifeadmin:[] };
+// conditional GET: GitHub answers an unchanged list with 304, which doesn't
+// count against the 60/hr unauthenticated rate limit. Keeps the read-only
+// fallback: a bad/expired token (401) retries once unauthenticated.
+const ghGetCache = {};
+async function ghGetJson(path){
+  const cached = ghGetCache[path];
+  const cond = cached ? {'If-None-Match': cached.etag} : {};
+  let res = await ghFetch(path, {cache:'no-store', headers:cond});
+  if(res.status === 401){
+    res = await fetch(`https://api.github.com/repos/${GH_REPO}${path}`,
+      {cache:'no-store', headers:Object.assign({'Accept':'application/vnd.github+json'}, cond)});
+  }
+  if(res.status === 304 && cached) return cached.data;
+  if(!res.ok) throw new Error('bad response ' + res.status);
+  const data = await res.json();
+  const etag = res.headers.get('ETag');
+  if(etag) ghGetCache[path] = { etag, data };
+  return data;
+}
 
-// compact "how long it's been waiting" tag — oldest-first ordering turns this
-// into real information (what's stalest), not just decoration
+// ---- todos: the ledger ----
+// Priority order and Today's-three membership live in a hidden HTML comment
+// at the end of each issue body (<!-- panel:{"rank":…,"today":…} -->) —
+// invisible on github.com, needs no extra labels, and one PATCH per drag.
+// rank: lower = higher in its column. Default rank is derived from
+// created_at so newer tasks sit on top until moved.
+// today: present = pinned into Today's three, value orders the slots.
+const TODAY_MAX = 3;
+const COL_VISIBLE = 6;
+const UNDO_MS = 5000;
+
+let todos = [];          // open tasks: {number,title,body,created_at,cat,rank,today}
+let doneWeek = [];       // completed in the last 7 days, newest first
+let pendingDone = null;  // a completion still inside its undo window
+const expanded = {};
+
+function readMeta(body){
+  const m = (body||'').match(/<!-- panel:(\{.*?\}) -->/s);
+  if(!m) return {};
+  try{ return JSON.parse(m[1]); }catch(e){ return {}; }
+}
+function writeMeta(body, t){
+  const base = (body||'').replace(/\s*<!-- panel:\{.*?\} -->\s*/s, '').trimEnd();
+  const meta = { rank:t.rank };
+  if(t.today != null) meta.today = t.today;
+  const tag = `<!-- panel:${JSON.stringify(meta)} -->`;
+  return base ? base + '\n\n' + tag : tag;
+}
+function catOfIssue(issue){
+  const names = (issue.labels||[]).map(l => l.name);
+  return TODO_CATEGORIES.find(c => names.includes(c.label))?.key;
+}
+function toTodo(issue, cat){
+  const meta = readMeta(issue.body);
+  return {
+    number: issue.number, title: issue.title, body: issue.body || '',
+    created_at: issue.created_at, cat,
+    rank: typeof meta.rank === 'number' ? meta.rank : -Date.parse(issue.created_at)/1000,
+    today: typeof meta.today === 'number' ? meta.today : null,
+  };
+}
+function todayItems(){
+  return todos.filter(t => t.today != null).sort((a,b) => a.today - b.today).slice(0, TODAY_MAX);
+}
+function colItems(cat, excludeNumber){
+  const inToday = new Set(todayItems().map(t => t.number));
+  return todos.filter(t => t.cat === cat && !inToday.has(t.number) && t.number !== excludeNumber)
+    .sort((a,b) => a.rank - b.rank);
+}
+function catDef(key){ return TODO_CATEGORIES.find(c => c.key === key); }
+
 function timeAgo(iso){
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
   if(days < 1) return 'today';
@@ -654,67 +848,116 @@ function timeAgo(iso){
   if(days < 365) return Math.floor(days/30) + 'mo';
   return Math.floor(days/365) + 'y';
 }
-
+// waiting-time mark: log scale so the first week moves visibly and a month+ pins to the end
+function ageMark(iso){
+  const days = Math.max(0, (Date.now() - new Date(iso).getTime()) / 86400000);
+  const pct = Math.min(1, Math.log1p(days) / Math.log1p(30)) * 100;
+  return `<span class="age" title="waiting ${timeAgo(iso)}"><span class="age-track"><span class="age-fill" style="width:${pct}%"></span><span class="age-dot" style="left:${pct}%"></span></span><span class="age-txt">${timeAgo(iso)}</span></span>`;
+}
 function checkSvg(){
   return `<div class="check"><svg viewBox="0 0 16 16"><path d="M3 8.5 6.5 12 13 4.5"/></svg></div>`;
 }
+function todaySlotHtml(t){
+  const c = catDef(t.cat);
+  return `<div class="todo-item today-slot" data-number="${t.number}" data-cat="${t.cat}" style="--cat:var(${c.color})">
+    ${checkSvg()}
+    <div class="today-body">
+      <span class="today-cat">${escapeHtml(c.title)}</span>
+      <div class="today-title">${escapeHtml(t.title)}</div>
+      ${ageMark(t.created_at)}
+    </div>
+  </div>`;
+}
+function colRowHtml(t){
+  return `<div class="todo-item col-row" data-number="${t.number}" data-cat="${t.cat}">
+    ${checkSvg()}<span class="t">${escapeHtml(t.title)}</span>${ageMark(t.created_at)}
+  </div>`;
+}
 
+let renderDeferred = false;
 function renderTodosPanel(errored){
+  // never rebuild the DOM under a finger mid-drag — catch up on release
+  if(press && press.lifted){ renderDeferred = true; return; }
+  const todayEl = document.getElementById('today-slots');
+  if(!todayEl) return;
+  if(errored){
+    todayEl.innerHTML = `<div class="today-hint">Couldn't load — check connection</div>`;
+    for(const cat of TODO_CATEGORIES){
+      const list = document.getElementById('todo-list-'+cat.key);
+      if(list) list.innerHTML = '';
+    }
+    return;
+  }
+
+  const today = todayItems();
+  let hint = '';
+  if(today.length < TODAY_MAX){
+    hint = `<div class="today-hint">${today.length
+      ? 'Hold a task and drag it up here'
+      : 'Hold any task below and drag it here to make it one of today’s three'}</div>`;
+  }
+  todayEl.innerHTML = today.map(todaySlotHtml).join('') + hint;
+
   for(const cat of TODO_CATEGORIES){
     const list = document.getElementById('todo-list-'+cat.key);
     const countEl = document.getElementById('todo-count-'+cat.key);
     if(!list) continue;
-    if(errored){ list.innerHTML = `<div class="todo-empty">Couldn't load — check connection</div>`; continue; }
-    const items = todosCache[cat.key] || [];
-    if(countEl) countEl.textContent = items.length ? `· ${items.length}` : '';
-    if(!items.length){ list.innerHTML = `<div class="todo-empty">Nothing pending</div>`; continue; }
-
-    const [hero, ...rest] = items;
-    let html = `
-      <div class="todo-row todo-hero" data-number="${hero.number}">
-        ${checkSvg()}
-        <div class="todo-hero-body">
-          <div class="todo-hero-tag">Next up · ${timeAgo(hero.created_at)}</div>
-          <div class="todo-hero-title">${escapeHtml(hero.title)}</div>
-        </div>
-      </div>`;
-    if(rest.length){
-      html += `<div class="todo-rule"></div><div class="todo-rest">`;
-      for(const issue of rest){
-        html += `
-          <div class="todo-row" data-number="${issue.number}">
-            ${checkSvg()}<span>${escapeHtml(issue.title)}</span>
-            <span class="todo-age">${timeAgo(issue.created_at)}</span>
-          </div>`;
-      }
-      html += `</div>`;
+    const total = todos.filter(t => t.cat === cat.key).length;
+    if(countEl) countEl.textContent = total ? String(total) : '';
+    const items = colItems(cat.key);
+    if(!items.length){
+      list.innerHTML = `<div class="todo-empty">${total ? 'Rest is in today’s three' : 'Nothing pending'}</div>`;
+      continue;
+    }
+    const open = expanded[cat.key];
+    const shown = open ? items : items.slice(0, COL_VISIBLE);
+    let html = shown.map(colRowHtml).join('');
+    if(items.length > COL_VISIBLE){
+      html += `<button type="button" class="todo-more" data-cat="${cat.key}">${open ? 'show less' : '+ ' + (items.length - COL_VISIBLE) + ' more'}</button>`;
     }
     list.innerHTML = html;
   }
+
+  const meta = document.getElementById('ledger-meta');
+  if(meta) meta.textContent = `${todos.length} open` + (doneWeek.length ? ` · ${doneWeek.length} done this week` : '');
+  renderDoneStrip();
+  renderHomeToday();
+}
+
+function renderDoneStrip(){
+  const el = document.getElementById('done-strip');
+  if(!el) return;
+  if(!doneWeek.length){
+    el.innerHTML = `<span class="done-label">Done this week</span><span class="done-item">Nothing ticked off yet</span>`;
+    return;
+  }
+  el.innerHTML = `<span class="done-label">Done this week · ${doneWeek.length}</span>
+    <span class="done-items">${doneWeek.slice(0, 8).map(d =>
+      `<span class="done-item" style="--cat:var(${catDef(d.cat).color})"><i></i><s>${escapeHtml(d.title)}</s></span>`).join('')}</span>`;
 }
 
 function renderHomeToday(){
   const wrap = document.getElementById('home-today-body');
   if(!wrap) return;
-  const total = TODO_CATEGORIES.reduce((n,c)=>n+(todosCache[c.key]?.length||0), 0);
-  if(total === 0){
+  if(todos.length === 0){
     wrap.innerHTML = `<div style="font-family:var(--mono); font-size:12px; color:var(--faint);">All clear — no open tasks</div>`;
     return;
   }
   const breakdown = TODO_CATEGORIES
-    .filter(c => (todosCache[c.key]||[]).length)
-    .map(c => `${todosCache[c.key].length} ${c.name}`).join(' · ');
-  // oldest-first across categories, same "what's been waiting longest" logic as the panel
-  const preview = TODO_CATEGORIES.flatMap(c => todosCache[c.key])
-    .sort((a,b) => new Date(a.created_at) - new Date(b.created_at)).slice(0, 4);
+    .map(c => [c, todos.filter(t => t.cat === c.key).length])
+    .filter(([,n]) => n).map(([c,n]) => `${n} ${c.name}`).join(' · ');
+  // Today's three if picked, otherwise the top of each column
+  const picks = todayItems();
+  const preview = picks.length ? picks
+    : TODO_CATEGORIES.map(c => colItems(c.key)[0]).filter(Boolean);
   wrap.innerHTML = `
-    <div style="font-family:var(--mono); font-size:32px; font-weight:300; color:var(--text); line-height:1;">${total}</div>
-    <div style="font-family:var(--mono); font-size:11px; color:var(--faint); margin-top:6px;">${breakdown} open</div>
-    <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
-      ${preview.map(i => `<div style="font-size:14px; color:var(--text);">${escapeHtml(i.title)}</div>`).join('')}
+    <div style="font-family:var(--mono); font-size:32px; font-weight:300; color:var(--text); line-height:1;">${todos.length}</div>
+    <div style="font-family:var(--mono); font-size:11px; color:var(--faint); margin-top:6px;">${breakdown} open${doneWeek.length ? ` · ${doneWeek.length} done this week` : ''}</div>
+    ${picks.length ? `<div class="card-label" style="color:var(--accent); margin-top:14px;">Today's three</div>` : ''}
+    <div style="display:flex; flex-direction:column; gap:8px; margin-top:${picks.length ? 8 : 14}px;">
+      ${preview.map(t => `<div style="font-size:14px; color:var(--text);">${escapeHtml(t.title)}</div>`).join('')}
     </div>`;
 }
-
 function renderHomeTodayError(){
   const wrap = document.getElementById('home-today-body');
   if(wrap) wrap.innerHTML = `<div style="font-family:var(--mono); font-size:12px; color:var(--faint);">Couldn't load</div>`;
@@ -722,34 +965,32 @@ function renderHomeTodayError(){
 
 async function loadTodos(){
   try{
-    let res = await ghFetch('/issues?labels=todo&state=open&per_page=100', {cache:'no-store'});
-    if(res.status === 401){
-      // token is invalid/expired — fall back to an unauthenticated read so viewing still works
-      res = await fetch(`https://api.github.com/repos/${GH_REPO}/issues?labels=todo&state=open&per_page=100`, {cache:'no-store'});
+    const since = new Date(Date.now() - 7*86400000);
+    since.setUTCHours(0,0,0,0); // stable per day, so the conditional-GET cache can hit
+    const [open, closed] = await Promise.all([
+      ghGetJson('/issues?labels=todo&state=open&per_page=100'),
+      ghGetJson(`/issues?labels=todo&state=closed&since=${since.toISOString()}&per_page=100`).catch(() => null),
+    ]);
+    const pendingNo = pendingDone ? pendingDone.t.number : null;
+    todos = open
+      .filter(i => !i.pull_request && i.number !== pendingNo)
+      .map(i => { const cat = catOfIssue(i); return cat ? toTodo(i, cat) : null; })
+      .filter(Boolean);
+    if(closed){
+      const cutoff = Date.now() - 7*86400000;
+      doneWeek = closed
+        .filter(i => !i.pull_request && i.state_reason !== 'not_planned' && i.closed_at && Date.parse(i.closed_at) >= cutoff)
+        .map(i => ({ number:i.number, title:i.title, cat:catOfIssue(i), closed_at:i.closed_at }))
+        .filter(d => d.cat)
+        .sort((a,b) => Date.parse(b.closed_at) - Date.parse(a.closed_at));
+      if(pendingDone && !doneWeek.some(d => d.number === pendingNo)) doneWeek.unshift(pendingDone.done);
     }
-    if(!res.ok) throw new Error('bad response');
-    const issues = await res.json();
-    const grouped = { work:[], padel:[], lifeadmin:[] };
-    for(const issue of issues){
-      if(issue.pull_request) continue;
-      const names = (issue.labels||[]).map(l => l.name);
-      const cat = TODO_CATEGORIES.find(c => names.includes(c.label));
-      if(cat) grouped[cat.key].push(issue);
-    }
-    for(const key of Object.keys(grouped)){
-      grouped[key].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
-    }
-    todosCache = grouped;
     renderTodosPanel();
-    renderHomeToday();
   }catch(e){
     renderTodosPanel(true);
     renderHomeTodayError();
   }
 }
-loadTodos();
-setInterval(loadTodos, 2*60*1000);
-updateTodosConnectUI();
 
 function updateAllConnectUI(){
   updateTodosConnectUI();
@@ -764,6 +1005,7 @@ document.getElementById('todos-connect')?.addEventListener('click', ()=>{
   }
 });
 
+// add: new tasks land at the top of their column (default rank comes from created_at)
 document.querySelectorAll('.todo-add').forEach(form=>{
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
@@ -772,16 +1014,19 @@ document.querySelectorAll('.todo-add').forEach(form=>{
     if(!text) return;
     if(!ensureToken()){ updateTodosConnectUI(); return; }
     updateTodosConnectUI();
-    const catDef = TODO_CATEGORIES.find(c => c.key === form.dataset.cat);
+    const c = catDef(form.dataset.cat);
     input.value = ''; input.disabled = true;
     try{
       const res = await ghFetch('/issues', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ title:text, labels:['todo', catDef.label] })
+        body: JSON.stringify({ title:text, labels:['todo', c.label] })
       });
       if(!res.ok) throw new Error('failed');
-      await loadTodos();
+      const issue = await res.json();
+      todos.push(toTodo(issue, c.key));
+      renderTodosPanel();
+      loadTodos();
     }catch(err){
       alert('Could not add task — check your token and connection.');
       input.value = text;
@@ -791,38 +1036,360 @@ document.querySelectorAll('.todo-add').forEach(form=>{
   });
 });
 
-document.querySelector('.todos-grid')?.addEventListener('click', (e)=>{
-  const row = e.target.closest('.todo-row');
-  if(!row || row.classList.contains('checking')) return;
+// ---- complete, with a 5s undo window ----
+// order stays: animate → update local state → network (the PATCH just waits
+// out the undo window first). If the PATCH fails, reload to reconcile.
+const toastEl = document.getElementById('toast');
+function showToast(msg){
+  document.getElementById('toast-msg').textContent = msg;
+  toastEl.classList.add('show');
+}
+function hideToast(){ toastEl.classList.remove('show'); }
+
+function completeLocally(number){
+  commitPendingDone(); // a previous completion still waiting — send it now
+  const t = todos.find(x => x.number === number);
+  if(!t) return;
+  todos = todos.filter(x => x !== t);
+  const done = { number:t.number, title:t.title, cat:t.cat, closed_at:new Date().toISOString() };
+  doneWeek.unshift(done);
+  pendingDone = { t, done, timer: setTimeout(commitPendingDone, UNDO_MS) };
+  renderTodosPanel();
+  showToast('Done · ' + t.title);
+}
+function commitPendingDone(){
+  if(!pendingDone) return;
+  const { t, timer } = pendingDone;
+  clearTimeout(timer);
+  pendingDone = null;
+  hideToast();
+  ghFetch(`/issues/${t.number}`, {
+    method:'PATCH', keepalive:true,
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ state:'closed', state_reason:'completed' })
+  }).then(res => {
+    if(!res.ok) throw new Error('failed');
+    loadTodos();
+  }).catch(() => {
+    alert('Could not save that on GitHub — reloading to check the current state.');
+    loadTodos();
+  });
+}
+document.getElementById('toast-undo').addEventListener('click', ()=>{
+  if(!pendingDone) return;
+  const { t, timer } = pendingDone;
+  clearTimeout(timer);
+  pendingDone = null;
+  hideToast();
+  todos.push(t);
+  doneWeek = doneWeek.filter(d => d.number !== t.number);
+  renderTodosPanel();
+});
+
+// ---- gestures: tap = complete · hold + move = drag · hold + release = edit ----
+// Hand-rolled on Pointer Events (native HTML5 DnD is unreliable on iOS Safari
+// touch — same reason as the Coffee panel).
+const ledgerEl = document.getElementById('ledger');
+const HOLD_MS = 380, MOVE_TOL = 8;
+let press = null;       // {item, x, y, pointerId, timer, lifted}
+let drag = null;        // {el, ghost, marker, number, cat, fromToday, ox, oy, target}
+let suppressClick = false;
+
+ledgerEl.addEventListener('contextmenu', e => { if(e.target.closest('.todo-item')) e.preventDefault(); });
+// once a task is lifted, stop the page/deck from scrolling under the finger
+document.addEventListener('touchmove', e => { if(press && press.lifted) e.preventDefault(); }, {passive:false});
+
+ledgerEl.addEventListener('pointerdown', e=>{
+  const item = e.target.closest('.todo-item');
+  suppressClick = false;
+  if(!item || item.classList.contains('checking') || (e.button && e.button !== 0)) return;
+  press = { item, x:e.clientX, y:e.clientY, pointerId:e.pointerId, lifted:false };
+  press.timer = setTimeout(()=>{
+    if(!press) return;
+    press.lifted = true;
+    suppressClick = true;
+    item.classList.add('held');
+    try{ item.setPointerCapture(press.pointerId); }catch(err){}
+  }, HOLD_MS);
+});
+
+document.addEventListener('pointermove', e=>{
+  if(!press || e.pointerId !== press.pointerId) return;
+  const dist = Math.hypot(e.clientX - press.x, e.clientY - press.y);
+  if(!press.lifted){
+    if(dist > MOVE_TOL){ clearTimeout(press.timer); press = null; } // it's a scroll/swipe, not a hold
+    return;
+  }
+  if(!drag){
+    if(dist < 4) return;
+    startDrag();
+  }
+  moveDrag(e);
+});
+
+document.addEventListener('pointerup', e=>{
+  if(!press || e.pointerId !== press.pointerId) return;
+  clearTimeout(press.timer);
+  const p = press;
+  if(drag){ finishDrag(); }
+  else if(p.lifted){
+    p.item.classList.remove('held');
+    press = null;
+    openTodoEdit(parseInt(p.item.dataset.number, 10));
+  }
+  press = null;
+  flushDeferredRender();
+});
+document.addEventListener('pointercancel', e=>{
+  if(!press || e.pointerId !== press.pointerId) return;
+  clearTimeout(press.timer);
+  press.item.classList.remove('held');
+  if(drag) cleanupDrag();
+  press = null;
+  renderTodosPanel();
+});
+
+function flushDeferredRender(){
+  if(renderDeferred){ renderDeferred = false; renderTodosPanel(); }
+}
+
+function startDrag(){
+  const el = press.item;
+  const r = el.getBoundingClientRect();
+  const ghost = el.cloneNode(true);
+  ghost.classList.remove('held');
+  ghost.classList.add('todo-ghost');
+  ghost.style.setProperty('--cat', getComputedStyle(el).getPropertyValue('--cat'));
+  ghost.style.width = r.width + 'px';
+  ghost.style.left = r.left + 'px';
+  ghost.style.top = r.top + 'px';
+  document.body.appendChild(ghost);
+  el.classList.remove('held');
+  el.classList.add('drag-src');
+  ledgerEl.classList.add('dragging');
+  const marker = document.createElement('div');
+  marker.className = 'drop-mark';
+  drag = {
+    el, ghost, marker,
+    number: parseInt(el.dataset.number, 10), cat: el.dataset.cat,
+    fromToday: el.classList.contains('today-slot'),
+    ox: press.x - r.left, oy: press.y - r.top, target: null,
+  };
+}
+
+function moveDrag(e){
+  drag.ghost.style.left = (e.clientX - drag.ox) + 'px';
+  drag.ghost.style.top = (e.clientY - drag.oy) + 'px';
+  document.querySelectorAll('.today-slot.swap').forEach(s => s.classList.remove('swap'));
+  const under = document.elementFromPoint(e.clientX, e.clientY);
+  const zone = under && under.closest('.today-slots, .col-list');
+  drag.target = null;
+  // no dragging across categories: only its own column or Today's three
+  if(!zone || (zone.classList.contains('col-list') && zone.dataset.cat !== drag.cat)){
+    drag.marker.remove();
+    return;
+  }
+  if(zone.id === 'today-slots'){
+    const slots = [...zone.querySelectorAll('.today-slot')].filter(s => s !== drag.el);
+    if(!drag.fromToday && slots.length >= TODAY_MAX){
+      // full — dropping onto a slot swaps that task back down to its column
+      drag.marker.remove();
+      const s = under.closest('.today-slot');
+      if(s && s !== drag.el){
+        s.classList.add('swap');
+        drag.target = { zone:'today', swap: parseInt(s.dataset.number, 10) };
+      }
+      return;
+    }
+    const before = slots.find(s => { const r = s.getBoundingClientRect(); return e.clientX < r.left + r.width/2; });
+    drag.marker.className = 'drop-mark slot';
+    zone.insertBefore(drag.marker, before || zone.querySelector('.today-hint'));
+    let prev = drag.marker.previousElementSibling;
+    while(prev && (prev === drag.el || !prev.classList.contains('today-slot'))) prev = prev.previousElementSibling;
+    drag.target = { zone:'today', prev: prev ? parseInt(prev.dataset.number, 10) : null };
+  } else {
+    const rows = [...zone.querySelectorAll('.col-row')].filter(r => r !== drag.el);
+    const before = rows.find(r => { const b = r.getBoundingClientRect(); return e.clientY < b.top + b.height/2; });
+    drag.marker.className = 'drop-mark';
+    zone.insertBefore(drag.marker, before || zone.querySelector('.todo-more'));
+    const idx = before ? rows.indexOf(before) : rows.length;
+    drag.target = { zone:'col', prev: idx > 0 ? parseInt(rows[idx-1].dataset.number, 10) : null };
+  }
+}
+
+function cleanupDrag(){
+  if(!drag) return;
+  drag.ghost.remove();
+  drag.marker.remove();
+  drag.el.classList.remove('drag-src');
+  ledgerEl.classList.remove('dragging');
+  document.querySelectorAll('.today-slot.swap').forEach(s => s.classList.remove('swap'));
+  drag = null;
+}
+
+// a key strictly between two neighbours' keys (either may be missing)
+function keyBetween(a, b, step){
+  if(a == null && b == null) return 0;
+  if(a == null) return b - step;
+  if(b == null) return a + step;
+  return (a + b) / 2;
+}
+
+function finishDrag(){
+  const { number, target } = drag;
+  cleanupDrag();
+  press = null;
+  const t = todos.find(x => x.number === number);
+  if(!t || !target){ renderTodosPanel(); return; }
+  const before = { rank:t.rank, today:t.today };
+  const changed = [t];
+
+  if(target.zone === 'col'){
+    const list = colItems(t.cat, t.number);
+    const i = target.prev == null ? 0 : list.findIndex(x => x.number === target.prev) + 1;
+    t.rank = keyBetween(list[i-1]?.rank, list[i]?.rank, 3600);
+    t.today = null;
+  } else if(target.swap != null){
+    const out = todos.find(x => x.number === target.swap);
+    t.today = out.today;
+    out.today = null;
+    changed.push(out);
+  } else {
+    const list = todayItems().filter(x => x.number !== t.number);
+    const i = target.prev == null ? 0 : list.findIndex(x => x.number === target.prev) + 1;
+    t.today = keyBetween(list[i-1]?.today, list[i]?.today, 1);
+  }
+
+  if(t.rank === before.rank && t.today === before.today && changed.length === 1){ renderTodosPanel(); return; }
+  if(!ensureToken()){
+    t.rank = before.rank; t.today = before.today;
+    updateTodosConnectUI(); renderTodosPanel(); return;
+  }
+  updateTodosConnectUI();
+  renderTodosPanel();
+  changed.forEach(saveTodoMeta);
+}
+
+async function saveTodoMeta(t){
+  t.body = writeMeta(t.body, t);
+  try{
+    const res = await ghFetch(`/issues/${t.number}`, {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ body:t.body })
+    });
+    if(!res.ok) throw new Error('failed');
+  }catch(err){
+    alert('Could not save the new order on GitHub — reloading to check the current state.');
+    loadTodos();
+  }
+}
+
+// tap = complete (or expand/collapse a long column)
+ledgerEl.addEventListener('click', (e)=>{
+  const more = e.target.closest('.todo-more');
+  if(more){ expanded[more.dataset.cat] = !expanded[more.dataset.cat]; renderTodosPanel(); return; }
+  const item = e.target.closest('.todo-item');
+  if(!item || item.classList.contains('checking')) return;
+  if(suppressClick){ suppressClick = false; return; }
   if(!ensureToken()){ updateTodosConnectUI(); return; }
   updateTodosConnectUI();
-  const number = parseInt(row.dataset.number, 10);
-
-  // optimistic: play the check-off moment immediately, patch GitHub in the
-  // background, and only reconcile with a real reload if that patch fails
-  row.classList.add('checking');
+  const number = parseInt(item.dataset.number, 10);
+  item.classList.add('checking');
   setTimeout(()=>{
-    row.classList.add('leaving');
-    setTimeout(async ()=>{
-      for(const cat of TODO_CATEGORIES){
-        todosCache[cat.key] = (todosCache[cat.key]||[]).filter(i => i.number !== number);
-      }
-      renderTodosPanel();
-      renderHomeToday();
-      try{
-        const res = await ghFetch(`/issues/${number}`, {
-          method:'PATCH',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ state:'closed' })
-        });
-        if(!res.ok) throw new Error('failed');
-      }catch(err){
-        alert('Could not save that on GitHub — reloading to check the current state.');
-        loadTodos();
-      }
-    }, 240);
+    item.classList.add('leaving');
+    setTimeout(()=> completeLocally(number), 240);
   }, 220);
 });
+
+// ---- edit sheet: rename, re-file, remove ----
+function openTodoEdit(number){
+  const t = todos.find(x => x.number === number);
+  if(!t) return;
+  let selected = t.cat;
+  const backdrop = document.getElementById('bean-modal-backdrop');
+  backdrop.innerHTML = `
+    <div class="bean-modal">
+      <div class="bean-modal-close" id="todo-edit-close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </div>
+      <form class="todo-edit" id="todo-edit-form">
+        <div class="card-label">Edit task</div>
+        <input type="text" id="todo-edit-title" maxlength="200" aria-label="Task" value="${escapeHtml(t.title)}">
+        <div class="cat-chips">
+          ${TODO_CATEGORIES.map(c => `<button type="button" class="cat-chip${c.key === t.cat ? ' on' : ''}" data-cat="${c.key}" style="--cat:var(${c.color})">${escapeHtml(c.title)}</button>`).join('')}
+        </div>
+        <div class="todo-edit-actions">
+          <button type="button" id="todo-edit-remove">Remove task</button>
+          <button type="submit" class="save">Save</button>
+        </div>
+      </form>
+    </div>`;
+  backdrop.classList.add('open');
+  document.getElementById('todo-edit-close').addEventListener('click', closeBeanModal);
+  backdrop.querySelectorAll('.cat-chip').forEach(chip => chip.addEventListener('click', ()=>{
+    selected = chip.dataset.cat;
+    backdrop.querySelectorAll('.cat-chip').forEach(c => c.classList.toggle('on', c === chip));
+  }));
+
+  document.getElementById('todo-edit-form').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const title = document.getElementById('todo-edit-title').value.trim();
+    if(!title) return;
+    const patch = {};
+    if(title !== t.title) patch.title = title;
+    // full labels replace — todo issues carry exactly these two labels
+    if(selected !== t.cat) patch.labels = ['todo', catDef(selected).label];
+    closeBeanModal();
+    if(!Object.keys(patch).length) return;
+    if(!ensureToken()){ updateTodosConnectUI(); return; }
+    updateTodosConnectUI();
+    t.title = title; t.cat = selected;
+    renderTodosPanel();
+    try{
+      const res = await ghFetch(`/issues/${t.number}`, {
+        method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(patch)
+      });
+      if(!res.ok) throw new Error('failed');
+    }catch(err){
+      alert('Could not save that on GitHub — reloading to check the current state.');
+      loadTodos();
+    }
+  });
+
+  document.getElementById('todo-edit-remove').addEventListener('click', async ()=>{
+    if(!confirm('Remove this task? It won’t count as done.')) return;
+    if(!ensureToken()){ updateTodosConnectUI(); return; }
+    updateTodosConnectUI();
+    closeBeanModal();
+    todos = todos.filter(x => x !== t);
+    renderTodosPanel();
+    try{
+      const res = await ghFetch(`/issues/${t.number}`, {
+        method:'PATCH', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ state:'closed', state_reason:'not_planned' })
+      });
+      if(!res.ok) throw new Error('failed');
+    }catch(err){
+      alert('Could not remove that on GitHub — reloading to check the current state.');
+      loadTodos();
+    }
+  });
+  setTimeout(()=> document.getElementById('todo-edit-title')?.focus(), 50);
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeBeanModal(); });
+
+// screen sleeping / app backgrounded: send any pending completion now;
+// waking up: refresh instead of waiting for the 2-minute poll
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden) commitPendingDone();
+  else { loadTodos(); if(typeof loadCoffeeBeans === 'function') loadCoffeeBeans(); }
+});
+window.addEventListener('pagehide', commitPendingDone);
+
+loadTodos();
+setInterval(loadTodos, 2*60*1000);
+updateTodosConnectUI();
 
 // coffee bean catalog (GitHub Issues as the store — same interactive-write
 // pattern as Todos, see CLAUDE.md)
@@ -925,12 +1492,8 @@ function renderCoffeePanel(errored){
 
 async function loadCoffeeBeans(){
   try{
-    let res = await ghFetch(`/issues?labels=${COFFEE_LABEL}&state=open&per_page=100`, {cache:'no-store'});
-    if(res.status === 401){
-      res = await fetch(`https://api.github.com/repos/${GH_REPO}/issues?labels=${COFFEE_LABEL}&state=open&per_page=100`, {cache:'no-store'});
-    }
-    if(!res.ok) throw new Error('bad response');
-    const issues = await res.json();
+    // ghGetJson keeps the unauthenticated retry on a 401 (see CLAUDE.md)
+    const issues = await ghGetJson(`/issues?labels=${COFFEE_LABEL}&state=open&per_page=100`);
     const grouped = { specialty: [], house: [] };
     for(const issue of issues){
       if(issue.pull_request) continue;
