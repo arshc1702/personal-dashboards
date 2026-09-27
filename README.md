@@ -40,11 +40,25 @@ instead of waiting for the first scheduled run.
 
 ## 3. Install on the iPad
 
-1. Open `https://<you>.github.io/panel/` in **Safari** on the iPad (must be
-   Safari, not Chrome, for the home-screen install to behave as a full app).
-2. Share icon → **Add to Home Screen**. This gives you a standalone app with
-   no browser chrome, using the dark theme and icon already configured.
-3. Launch it from the home screen once so it registers as a PWA.
+1. Open `https://arshc1702.github.io/personal-dashboards/` in **Safari** on
+   the iPad (not the GitHub app or Chrome — Safari gives the cleanest
+   full-screen install).
+2. Tap the **Share** icon (square with an up-arrow, top right) → **Add to
+   Home Screen** → name it `Panel` → **Add**. It opens full screen with no
+   browser bars.
+3. Open it from the home-screen icon, go to **Todos**, tap **connect** and
+   paste your GitHub token (see below). Do this *inside the home-screen
+   app* — it keeps its own storage, separate from a Safari tab.
+
+**Creating the token (once a year):** github.com → Settings → Developer
+settings → Personal access tokens → **Fine-grained tokens** → Generate new
+token. Expiration: 1 year. Repository access: *Only select repositories* →
+`personal-dashboards`. Permissions → Repository → **Issues: Read and
+write**. Nothing else. Copy the token and paste it when the panel asks.
+
+**Todos gestures:** tap a task to tick it off (Undo appears for 5 s) ·
+press and hold, then move, to reorder it or drag it up into Today's three ·
+press and hold, then let go, to rename, re-file or remove it.
 
 ## 4. Set it up as a fixed display
 
