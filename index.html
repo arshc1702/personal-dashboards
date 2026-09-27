@@ -369,38 +369,107 @@
     .col-list{ overflow:visible; }
   }
 
-  /* COFFEE panel — bean catalog */
-  .coffee-setup{
-    display:flex; gap:30px; flex-wrap:wrap; flex-shrink:0;
-    padding-bottom:16px; margin-bottom:18px; border-bottom:1px solid var(--border);
+  /* COFFEE panel — the café. assets/coffee-cafe.webp (1536×1024, owner-made)
+     is the stage; everything live is pinned onto it in % of the picture,
+     sized in --u (1% of the scene's height, set by fitCafe()). Deliberate
+     exception to the no-illustration rule: owner's choice, Coffee only. */
+  [data-name="coffee"] .watermark{ display:none; } /* the scene covers the panel */
+  .cafe-wrap{ flex:1; min-height:0; margin-top:16px; display:flex; align-items:center; justify-content:center; }
+  .cafe{
+    position:relative; width:100%; aspect-ratio:3/2; flex-shrink:0;
+    border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
+    background:var(--c-coffee) url(assets/coffee-cafe.webp) center / 100% 100% no-repeat;
+    --u:7px;
   }
-  .coffee-setup .spec .k{ font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); }
-  .coffee-setup .spec .v{ font-family:var(--sans); font-size:14px; color:var(--text); margin-top:3px; }
 
-  .blend-cols{ flex:1; display:grid; grid-template-columns:1fr 1fr; gap:26px; min-height:0; }
-  .blend-col{ display:flex; flex-direction:column; gap:13px; min-height:0; }
-  .bean-grid{
-    flex:1; display:grid; grid-template-columns:repeat(auto-fill, minmax(148px,1fr));
-    align-content:start; gap:14px; overflow-y:auto; min-height:60px;
-    border-radius:var(--radius); transition:background-color .15s;
+  /* shelves: bags stand on the painted planks (top surface y140 and y343) */
+  .shelf{
+    position:absolute; left:3.5%; display:flex; align-items:flex-end; gap:calc(var(--u) * 1.3);
+    box-sizing:border-box; border-radius:calc(var(--u) * .8); transition:background-color .15s;
   }
-  .bean-grid.drag-over{ background-color:color-mix(in srgb, var(--c-coffee) 7%, transparent); }
-  .bean-empty{ font-family:var(--mono); font-size:11px; color:var(--faint); grid-column:1/-1; }
-  .bean-empty a{ color:var(--c-coffee); }
+  .shelf.top{ top:0; height:17.4%; width:44.7%; padding-bottom:calc(var(--u) * 3.1); }
+  .shelf.low{ top:19.5%; height:17.1%; width:40.8%; padding-bottom:calc(var(--u) * 3.1); }
+  .shelf.drag-over{ background:rgba(250,248,244,.22); }
+  .shelf-tag{
+    position:absolute; left:4.2%; padding:calc(var(--u) * .25) calc(var(--u) * .7);
+    font-family:var(--mono); font-size:calc(var(--u) * 1.05); letter-spacing:.14em; text-transform:uppercase;
+    color:var(--text); background:rgba(250,248,244,.9); border-radius:2px; pointer-events:none;
+  }
+  .shelf-tag.top{ top:14.6%; }
+  .shelf-tag.low{ top:34.4%; }
 
-  .bean-card{
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-    box-shadow:var(--shadow); overflow:hidden; cursor:grab; touch-action:none;
-    display:flex; flex-direction:column;
+  /* a bag: folded top, valve, paper label — kraft for specialty, ink for house */
+  .bag{
+    width:calc(var(--u) * 8.9); height:calc(var(--u) * 12); flex-shrink:0; box-sizing:border-box;
+    border-radius:calc(var(--u) * .5) calc(var(--u) * .5) calc(var(--u) * .8) calc(var(--u) * .8);
+    display:flex; flex-direction:column; align-items:center; overflow:hidden;
+    cursor:grab; touch-action:none; -webkit-user-select:none; user-select:none;
+    box-shadow:0 calc(var(--u) * .35) calc(var(--u) * .9) rgba(43,38,32,.38);
+    background:color-mix(in srgb, var(--c-coffee) 62%, var(--bg));
   }
-  .bean-card.lifting{ box-shadow:0 14px 30px rgba(43,38,32,.2); cursor:grabbing; opacity:.96; }
-  .bean-img{ width:100%; aspect-ratio:4/3; object-fit:cover; display:block; background:var(--bg); }
-  .bean-img-ph{ width:100%; aspect-ratio:4/3; background:var(--bg); display:flex; align-items:center; justify-content:center; color:var(--faint); }
-  .bean-img-ph svg{ width:26px; height:26px; }
-  .bean-info{ padding:11px 12px 12px; display:flex; flex-direction:column; gap:2px; }
+  .bag.house{ background:var(--text); }
+  .bag.lifting{ box-shadow:0 14px 30px rgba(43,38,32,.4); cursor:grabbing; z-index:50; }
+  .bag-top{ align-self:stretch; height:14%; background:rgba(43,38,32,.18); }
+  .bag.house .bag-top{ background:rgba(250,248,244,.12); }
+  .bag-valve{ width:calc(var(--u) * .7); height:calc(var(--u) * .7); border-radius:50%; margin-top:6%; border:1px solid rgba(43,38,32,.4); }
+  .bag.house .bag-valve{ border-color:rgba(250,248,244,.4); }
+  .bag-label{
+    margin:8% 9% 0; align-self:stretch; flex:1; margin-bottom:10%;
+    background:var(--surface); border-radius:calc(var(--u) * .3);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:calc(var(--u) * .25);
+    padding:calc(var(--u) * .4) calc(var(--u) * .3); text-align:center; min-height:0; overflow:hidden;
+  }
+  .bag.house .bag-label{ background:var(--bg); }
+  .bag-roaster{ font-family:var(--mono); font-size:calc(var(--u) * .85); letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
+    max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bag-name{ font-family:var(--display); font-style:italic; font-weight:500; font-size:calc(var(--u) * 1.55); line-height:1.1; color:var(--text);
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .bag .rating{ gap:calc(var(--u) * .2); }
+  .bag .rating i{ width:calc(var(--u) * .5); height:calc(var(--u) * .5); }
+  .bag-add, .bag-more{
+    width:calc(var(--u) * 8.9); height:calc(var(--u) * 12); flex-shrink:0; box-sizing:border-box;
+    border:1px solid rgba(43,38,32,.28); border-radius:calc(var(--u) * .5) calc(var(--u) * .5) calc(var(--u) * .8) calc(var(--u) * .8);
+    display:flex; align-items:center; justify-content:center; text-align:center; text-decoration:none; cursor:pointer;
+    font-family:var(--mono); font-size:calc(var(--u) * 1); color:rgba(43,38,32,.6); background:rgba(250,248,244,.18);
+  }
+
+  /* the chalkboard (black area x942–1500, y45–437): live menu of what's on the shelf */
+  .board{
+    position:absolute; left:61.3%; top:4.4%; width:36.3%; height:38.3%; box-sizing:border-box;
+    padding:calc(var(--u) * 1.8) calc(var(--u) * 2.8) calc(var(--u) * 1.4);
+    display:flex; flex-direction:column; gap:calc(var(--u) * 1); color:rgba(250,248,244,.92);
+  }
+  .board-head{ display:flex; justify-content:space-between; align-items:baseline; }
+  .board-title{ font-family:var(--display); font-style:italic; font-size:calc(var(--u) * 2.8); line-height:1; }
+  .board-kicker{ font-family:var(--mono); font-size:calc(var(--u) * 1); letter-spacing:.16em; text-transform:uppercase; color:rgba(250,248,244,.5); }
+  .board-rule{ height:1px; background:rgba(250,248,244,.22); flex-shrink:0; }
+  .board-menu{ flex:1; min-height:0; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:calc(var(--u) * 2.2); overflow:hidden; }
+  .board-sec{ display:flex; flex-direction:column; gap:calc(var(--u) * .75); min-width:0; }
+  .board-sec-name{ font-family:var(--mono); font-size:calc(var(--u) * 1.05); letter-spacing:.18em; text-transform:uppercase; color:rgba(250,248,244,.55);
+    padding-bottom:calc(var(--u) * .4); border-bottom:1px solid rgba(250,248,244,.18); }
+  .board-drink{ display:flex; flex-direction:column; gap:calc(var(--u) * .15); }
+  .bd-name{ font-family:var(--display); font-style:italic; font-size:calc(var(--u) * 1.65); line-height:1.1; }
+  .bd-desc{ font-family:var(--mono); font-size:calc(var(--u) * .95); line-height:1.35; color:rgba(250,248,244,.58); }
+  .board-empty{ font-family:var(--display); font-style:italic; font-size:calc(var(--u) * 1.9); color:rgba(250,248,244,.6); }
+  .board-empty a{ color:inherit; }
+  .board-foot{
+    background:none; border:none; padding:0; cursor:pointer;
+    font-family:var(--mono); font-size:calc(var(--u) * 1.15); letter-spacing:.08em; color:rgba(250,248,244,.7); text-decoration:underline;
+  }
+
+  /* gear tags on the counter top, under the machine and grinder */
+  .gear-tag{
+    position:absolute; top:80.8%; padding:calc(var(--u) * .35) calc(var(--u) * .8);
+    font-family:var(--mono); font-size:calc(var(--u) * 1.05); letter-spacing:.06em; white-space:nowrap;
+    color:var(--text); background:rgba(250,248,244,.9); border-radius:2px; pointer-events:none;
+  }
+  .gear-tag:empty{ display:none; }
+  .gear-tag.machine{ left:77.8%; transform:translateX(-50%); }
+  .gear-tag.grinder{ right:1.6%; }
+
   .bean-name{ font-family:var(--display); font-style:italic; font-weight:500; font-size:14px; color:var(--text); line-height:1.25; }
   .bean-roaster{ font-size:11px; color:var(--muted); }
-  .bean-recipe{ font-family:var(--mono); font-size:10px; color:var(--faint); margin-top:3px; }
+  .bean-empty{ font-family:var(--mono); font-size:11px; color:var(--faint); }
 
   .bean-modal-backdrop{
     position:fixed; inset:0; background:rgba(43,38,32,.4); backdrop-filter:blur(3px);
@@ -421,6 +490,75 @@
   .bean-modal-body{ padding:24px 26px 28px; display:flex; flex-direction:column; gap:16px; }
   .bean-modal-body .bean-name{ font-size:23px; }
   .bean-modal-body .bean-roaster{ font-size:14px; margin-top:5px; }
+
+  /* freshness: a track with the peak window shaded, dot at today's days off roast */
+  .fresh{ display:flex; align-items:center; gap:7px; min-width:0; }
+  .fresh-track{ position:relative; width:40px; height:1px; background:var(--border); flex-shrink:0; }
+  .fresh-window{ position:absolute; top:-1.5px; height:4px; border-radius:2px; background:color-mix(in srgb, var(--c-coffee) 22%, transparent); }
+  .fresh-dot{ position:absolute; top:-2.5px; width:6px; height:6px; margin-left:-3px; border-radius:50%; background:var(--c-coffee); }
+  .fresh-txt{ font-family:var(--mono); font-size:10px; color:var(--faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .fresh.past .fresh-dot{ background:var(--faint); }
+  .fresh.wide .fresh-track{ width:120px; }
+  .fresh.wide .fresh-txt{ font-size:11px; color:var(--muted); }
+
+  .rating{ display:inline-flex; gap:3px; flex-shrink:0; }
+  .rating i{ width:5px; height:5px; border-radius:50%; border:1px solid color-mix(in srgb, var(--c-coffee) 55%, transparent); }
+  .rating i.on{ background:var(--c-coffee); border-color:var(--c-coffee); }
+  .rating.lg{ gap:5px; }
+  .rating.lg i{ width:8px; height:8px; }
+
+  /* detail modal additions */
+  .bean-modal .k{ font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); }
+  .bean-modal .v{ font-family:var(--mono); font-size:16px; color:var(--text); margin-top:4px; }
+  .bean-stats{ display:flex; gap:26px; flex-wrap:wrap; padding-top:14px; border-top:1px solid var(--border); }
+  .bean-fresh-row{ display:flex; align-items:flex-end; gap:26px; flex-wrap:wrap; }
+  .bean-fresh-row .fresh{ padding-bottom:5px; }
+  .bean-actions{ display:flex; justify-content:space-between; align-items:center; padding-top:6px; }
+  .bean-actions button{
+    font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer;
+    background:none; border:none; padding:0; color:var(--muted); text-decoration:underline;
+  }
+  .bean-actions .primary{ text-decoration:none; color:var(--surface); background:var(--text); padding:8px 16px; border-radius:999px; }
+
+  /* edit card */
+  .bean-edit{ padding:24px 26px 26px; display:flex; flex-direction:column; gap:16px; }
+  .be-name{
+    width:100%; font-family:var(--display); font-style:italic; font-size:22px; color:var(--text);
+    background:transparent; border:none; border-bottom:1px solid var(--border); outline:none; padding:4px 0 8px;
+  }
+  .be-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px 18px; }
+  .be-grid.four{ grid-template-columns:repeat(4, minmax(0,1fr)); }
+  .be-field{ display:flex; flex-direction:column; gap:5px; min-width:0; }
+  .be-field input, .be-field textarea{
+    width:100%; font-family:var(--sans); font-size:15px; color:var(--text); background:transparent;
+    border:none; border-bottom:1px solid var(--border); outline:none; padding:3px 0 6px; resize:vertical;
+  }
+  .be-name:focus, .be-field input:focus, .be-field textarea:focus{ border-color:var(--c-coffee); }
+  .be-rating{ display:flex; gap:9px; padding-top:6px; }
+  .be-rating button{
+    width:18px; height:18px; border-radius:50%; cursor:pointer; padding:0;
+    border:1.4px solid color-mix(in srgb, var(--c-coffee) 55%, transparent); background:transparent;
+  }
+  .be-rating button.on{ background:var(--c-coffee); border-color:var(--c-coffee); }
+
+  /* recipe book */
+  .bean-modal.wide{ max-width:640px; }
+  .recipe-book{ padding:24px 26px 26px; display:flex; flex-direction:column; gap:4px; }
+  .rb-section{ font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
+    padding:16px 0 6px; border-bottom:1px solid var(--border); }
+  .rb-row{
+    display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) auto; gap:14px; align-items:center;
+    text-align:left; width:100%; background:none; border:none; border-bottom:1px solid var(--border);
+    padding:11px 0; cursor:pointer; font:inherit; color:inherit;
+  }
+  .rb-main{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .rb-main .bean-name{ font-size:16px; }
+  .rb-recipe{ font-family:var(--mono); font-size:11px; color:var(--muted); line-height:1.5; }
+  @media (max-width:600px){
+    .be-grid.four{ grid-template-columns:1fr 1fr; }
+    .rb-row{ grid-template-columns:1fr auto; }
+    .rb-recipe{ grid-column:1 / -1; grid-row:2; }
+  }
 
   /* tick-dial nav */
   #dial{
@@ -551,16 +689,19 @@
       <span class="clock">--:--</span>
     </div>
 
-    <div class="coffee-setup" id="coffee-setup"></div>
-
-    <div class="blend-cols">
-      <div class="blend-col">
-        <div class="card-label" style="color:var(--c-coffee)">Specialty Blend <span class="todo-count" id="blend-count-specialty"></span></div>
-        <div class="bean-grid" id="bean-grid-specialty"><div class="bean-empty">Loading…</div></div>
-      </div>
-      <div class="blend-col">
-        <div class="card-label" style="color:var(--c-coffee)">House Blend <span class="todo-count" id="blend-count-house"></span></div>
-        <div class="bean-grid" id="bean-grid-house"><div class="bean-empty">Loading…</div></div>
+    <div class="cafe-wrap" id="cafe-wrap">
+      <div class="cafe" id="cafe" role="img" aria-label="Coffee bar: bean shelves, menu board, espresso machine and grinder">
+        <div class="shelf top bean-grid" id="bean-grid-specialty"></div>
+        <div class="shelf low bean-grid" id="bean-grid-house"></div>
+        <span class="shelf-tag top">Specialty <span id="blend-count-specialty"></span></span>
+        <span class="shelf-tag low">House <span id="blend-count-house"></span></span>
+        <div class="board" id="cafe-board">
+          <div class="board-head"><span class="board-title">On the bar</span><button type="button" class="board-foot" id="recipe-book-link">Recipe book</button></div>
+          <div class="board-rule"></div>
+          <div class="board-menu" id="board-menu"><div class="board-empty">Loading the menu…</div></div>
+        </div>
+        <span class="gear-tag machine" id="gear-machine"></span>
+        <span class="gear-tag grinder" id="gear-grinder"></span>
       </div>
     </div>
   </section>
@@ -1435,124 +1576,440 @@ document.getElementById('coffee-connect')?.addEventListener('click', ()=>{
   }
 });
 
+// gear tags on the counter come from data/coffee-setup.json (Machine / Grinder rows)
 async function loadCoffeeSetup(){
-  const el = document.getElementById('coffee-setup');
-  if(!el) return;
   try{
     const res = await fetch('data/coffee-setup.json', {cache:'no-store'});
     const specs = await res.json();
-    el.innerHTML = (Array.isArray(specs) && specs.length)
-      ? specs.map(s => `<div class="spec"><div class="k">${escapeHtml(s.label)}</div><div class="v">${escapeHtml(s.value)}</div></div>`).join('')
-      : `<div style="font-family:var(--mono); font-size:11px; color:var(--faint);">Setup not added yet</div>`;
-  }catch(e){
-    el.innerHTML = '';
-  }
+    const find = k => (Array.isArray(specs) ? specs : []).find(s => (s.label||'').toLowerCase() === k)?.value || '';
+    document.getElementById('gear-machine').textContent = find('machine');
+    document.getElementById('gear-grinder').textContent = find('grinder');
+  }catch(e){ /* tags stay hidden */ }
 }
 loadCoffeeSetup();
 
+// fit the 3:2 scene inside the panel and set --u (1% of its height) for everything pinned on it
+const cafeEl = document.getElementById('cafe');
+const cafeWrap = document.getElementById('cafe-wrap');
+function fitCafe(){
+  if(!cafeEl || !cafeWrap) return;
+  const w = cafeWrap.clientWidth, h = cafeWrap.clientHeight;
+  if(!w || !h) return;
+  const width = Math.min(w, h * 1.5);
+  cafeEl.style.width = width + 'px';
+  cafeEl.style.setProperty('--u', (width / 1.5 / 100) + 'px');
+}
+if(window.ResizeObserver && cafeWrap) new ResizeObserver(fitCafe).observe(cafeWrap);
+window.addEventListener('resize', fitCafe);
+fitCafe();
+
+// ---- bean fields ----
+// Every field lives as a "### Label" section of the issue body (the shape the
+// coffee-bean issue forms produce), so beans stay readable on github.com and
+// the panel's edit card just rewrites sections in place.
+const BEAN_FIELDS = [
+  { key:'name',      label:'Bean Name' },
+  { key:'roaster',   label:'Roaster / Cafe' },
+  { key:'origin',    label:'Origin' },
+  { key:'roastDate', label:'Roast Date' },
+  { key:'dose',      label:'Dose' },
+  { key:'yield',     label:'Yield' },
+  { key:'time',      label:'Time' },
+  { key:'grind',     label:'Grind' },
+  { key:'rating',    label:'Rating' },
+  { key:'notes',     label:'Notes' },
+];
+// freshness window for espresso, in days off roast
+const REST_DAYS = 7, PEAK_END_DAYS = 30, FRESH_SCALE_DAYS = 45;
+
+function setIssueField(body, label, value){
+  const v = String(value || '').trim() || '_No response_';
+  const esc = label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const re = new RegExp('(### ' + esc + '\\s*\\n+)(.*?)(?=\\n### |$)', 's');
+  if(re.test(body)) return body.replace(re, (m, head) => head + v + '\n');
+  if(!String(value || '').trim()) return body; // don't add empty sections
+  // new section: keep the Image section last so the photo stays at the bottom
+  const section = `### ${label}\n\n${v}\n`;
+  const img = body.indexOf('### Image');
+  if(img > -1) return body.slice(0, img) + section + '\n' + body.slice(img);
+  return (body.trimEnd() ? body.trimEnd() + '\n\n' : '') + section;
+}
+
+// older beans have the grind typed into the name, e.g. "Gateway (Grind Size: 2)"
+const GRIND_IN_NAME = /\s*\(\s*grind(?:\s*size)?\s*:?\s*([^)]+?)\s*\)\s*/i;
+
+function parseRoastDate(s){
+  if(!s) return null;
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(m) return new Date(+m[1], +m[2]-1, +m[3]);
+  m = s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})$/); // AU order: day/month/year
+  if(m) return new Date(m[3].length === 2 ? 2000 + +m[3] : +m[3], +m[2]-1, +m[1]);
+  const t = Date.parse(s);
+  return isNaN(t) ? null : new Date(t);
+}
+function daysOffRoast(b){
+  const d = parseRoastDate(b.roastDate);
+  if(!d) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  return Math.max(0, Math.round((today - d) / 86400000));
+}
+function freshness(b){
+  const days = daysOffRoast(b);
+  if(days == null) return null;
+  const state = days < REST_DAYS ? 'resting' : days <= PEAK_END_DAYS ? 'peak' : 'past peak';
+  return { days, state };
+}
+// a track with the peak window marked and a dot at today's days-off-roast
+function freshMark(b, wide){
+  const f = freshness(b);
+  if(!f) return '';
+  const pct = n => Math.min(100, n / FRESH_SCALE_DAYS * 100);
+  return `<div class="fresh${f.state === 'past peak' ? ' past' : ''}${wide ? ' wide' : ''}" title="${f.days} days off roast · ${f.state}">
+    <span class="fresh-track"><span class="fresh-window" style="left:${pct(REST_DAYS)}%; width:${pct(PEAK_END_DAYS) - pct(REST_DAYS)}%"></span><span class="fresh-dot" style="left:${pct(f.days)}%"></span></span>
+    <span class="fresh-txt">${f.days}d off roast${f.state !== 'peak' ? ' · ' + f.state : ''}</span>
+  </div>`;
+}
+function ratingDots(r, cls=''){
+  const n = parseInt(r, 10) || 0;
+  if(!n) return '';
+  return `<span class="rating ${cls}" aria-label="Rated ${n} of 5">${[1,2,3,4,5].map(i => `<i class="${i <= n ? 'on' : ''}"></i>`).join('')}</span>`;
+}
+function recipeLine(b){
+  const parts = [];
+  if(b.dose && b.yield) parts.push(`${b.dose} → ${b.yield}`);
+  else if(b.dose) parts.push(b.dose);
+  if(b.time) parts.push(b.time);
+  if(b.grind) parts.push('grind ' + b.grind);
+  return parts.join(' · ');
+}
+
+function toBean(issue){
+  const body = issue.body || '';
+  const names = (issue.labels||[]).map(l => l.name);
+  const b = {
+    number: issue.number, title: issue.title, body,
+    blend: names.includes(BLEND_LABEL.house) ? 'house' : 'specialty',
+    finished: issue.state === 'closed',
+    image: extractImageUrl(body),
+  };
+  for(const f of BEAN_FIELDS) b[f.key] = parseIssueField(body, f.label);
+  if(!b.name) b.name = issue.title;
+  const g = b.name.match(GRIND_IN_NAME);
+  if(g){
+    if(!b.grind) b.grind = g[1];
+    b.name = b.name.replace(GRIND_IN_NAME, ' ').trim();
+  }
+  return b;
+}
+// best-rated first; unrated keep GitHub's order (newest first)
+function byRating(a, b){ return (parseInt(b.rating,10)||0) - (parseInt(a.rating,10)||0); }
+
+let finishedBeans = [];
+function allBeans(){ return [...beansCache.specialty, ...beansCache.house, ...finishedBeans]; }
+function findBean(number){ return allBeans().find(b => b.number === number); }
+
+const CUP_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/></svg>`;
+const CLOSE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>`;
+
 function beanCardHtml(b){
-  const img = b.image
-    ? `<img class="bean-img" src="${b.image}" alt="" draggable="false">`
-    : `<div class="bean-img-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/></svg></div>`;
-  const recipeParts = [];
-  if(b.dose && b.yield) recipeParts.push(`${b.dose} → ${b.yield}`);
-  else if(b.dose) recipeParts.push(b.dose);
-  if(b.time) recipeParts.push(b.time);
-  return `<div class="bean-card" data-number="${b.number}">
-    ${img}
-    <div class="bean-info">
-      <div class="bean-name">${escapeHtml(b.name)}</div>
-      ${b.roaster ? `<div class="bean-roaster">${escapeHtml(b.roaster)}</div>` : ''}
-      ${recipeParts.length ? `<div class="bean-recipe">${escapeHtml(recipeParts.join(' · '))}</div>` : ''}
+  return `<div class="bean-card bag ${b.blend}" data-number="${b.number}" title="${escapeHtml([b.name, b.roaster].filter(Boolean).join(' · '))}">
+    <div class="bag-top"></div>
+    <div class="bag-valve"></div>
+    <div class="bag-label">
+      ${b.roaster ? `<span class="bag-roaster">${escapeHtml(b.roaster)}</span>` : ''}
+      <span class="bag-name">${escapeHtml(b.name)}</span>
+      ${ratingDots(b.rating)}
     </div>
   </div>`;
 }
 
+function addBeanUrl(blend){
+  return `https://github.com/${GH_REPO}/issues/new?template=${blend === 'house' ? 'coffee-bean-house.yml' : 'coffee-bean.yml'}`;
+}
+
+// how many bag slots fit on each painted plank (the last slot is "+ add" or "+N more")
+const SHELF_SLOTS = { specialty: 6, house: 5 };
+
+function shelfHtml(blend){
+  const beans = beansCache[blend];
+  const slots = SHELF_SLOTS[blend];
+  if(beans.length < slots){
+    return beans.map(beanCardHtml).join('') +
+      `<a class="bag-add" href="${addBeanUrl(blend)}" target="_blank" rel="noopener">+ add<br>bean</a>`;
+  }
+  const shown = beans.slice(0, slots - 1);
+  return shown.map(beanCardHtml).join('') +
+    `<button type="button" class="bag-more" data-open="recipe-book">+${beans.length - shown.length}<br>more</button>`;
+}
+
 function renderCoffeePanel(errored){
-  const gridS = document.getElementById('bean-grid-specialty');
-  const gridH = document.getElementById('bean-grid-house');
-  const countS = document.getElementById('blend-count-specialty');
-  const countH = document.getElementById('blend-count-house');
-  if(!gridS || !gridH) return;
+  const shelfS = document.getElementById('bean-grid-specialty');
+  const shelfH = document.getElementById('bean-grid-house');
+  if(!shelfS || !shelfH) return;
   if(errored){
-    gridS.innerHTML = `<div class="bean-empty">Couldn't load — check connection</div>`;
-    gridH.innerHTML = '';
+    shelfS.innerHTML = `<span class="bag-add">Couldn't<br>load beans</span>`;
+    shelfH.innerHTML = '';
     return;
   }
+  const countS = document.getElementById('blend-count-specialty');
+  const countH = document.getElementById('blend-count-house');
   if(countS) countS.textContent = beansCache.specialty.length ? `· ${beansCache.specialty.length}` : '';
   if(countH) countH.textContent = beansCache.house.length ? `· ${beansCache.house.length}` : '';
-  gridS.innerHTML = beansCache.specialty.length
-    ? beansCache.specialty.map(beanCardHtml).join('')
-    : `<div class="bean-empty">No beans yet — add one via the <a href="https://github.com/${GH_REPO}/issues/new?template=coffee-bean.yml" target="_blank" rel="noopener">Coffee bean issue template</a>.</div>`;
-  gridH.innerHTML = beansCache.house.length
-    ? beansCache.house.map(beanCardHtml).join('')
-    : `<div class="bean-empty">Drag a bean here, or add one already set to House Blend.</div>`;
+  shelfS.innerHTML = shelfHtml('specialty');
+  shelfH.innerHTML = shelfHtml('house');
+
+  const book = document.getElementById('recipe-book-link');
+  if(book) book.textContent = `Recipe book · ${allBeans().length}`;
   attachBeanCardHandlers();
+  fitCafe();
 }
+
+// the "+N more" slot on a full shelf
+document.getElementById('cafe')?.addEventListener('click', (e)=>{
+  if(e.target.closest('[data-open="recipe-book"]')) openRecipeBook();
+});
+
+// the chalkboard: the owner's drinks menu, hand-edited in data/coffee-menu.json
+async function loadCoffeeMenu(){
+  const el = document.getElementById('board-menu');
+  if(!el) return;
+  try{
+    const res = await fetch('data/coffee-menu.json', {cache:'no-store'});
+    const menu = await res.json();
+    el.innerHTML = menu.map(sec => `<div class="board-sec">
+      <div class="board-sec-name">${escapeHtml(sec.section)}</div>
+      ${(sec.items||[]).map(d => `<div class="board-drink"><span class="bd-name">${escapeHtml(d.name)}</span>${d.desc ? `<span class="bd-desc">${escapeHtml(d.desc)}</span>` : ''}</div>`).join('')}
+    </div>`).join('');
+  }catch(e){
+    el.innerHTML = `<div class="board-empty">Menu not available</div>`;
+  }
+}
+loadCoffeeMenu();
 
 async function loadCoffeeBeans(){
   try{
     // ghGetJson keeps the unauthenticated retry on a 401 (see CLAUDE.md)
-    const issues = await ghGetJson(`/issues?labels=${COFFEE_LABEL}&state=open&per_page=100`);
+    const [open, closed] = await Promise.all([
+      ghGetJson(`/issues?labels=${COFFEE_LABEL}&state=open&per_page=100`),
+      ghGetJson(`/issues?labels=${COFFEE_LABEL}&state=closed&per_page=100`).catch(() => null),
+    ]);
     const grouped = { specialty: [], house: [] };
-    for(const issue of issues){
+    for(const issue of open){
       if(issue.pull_request) continue;
-      const body = issue.body || '';
-      const names = (issue.labels||[]).map(l => l.name);
-      const blendKey = names.includes(BLEND_LABEL.house) ? 'house' : 'specialty';
-      grouped[blendKey].push({
-        number: issue.number,
-        name: parseIssueField(body, 'Bean Name') || issue.title,
-        roaster: parseIssueField(body, 'Roaster / Cafe'),
-        origin: parseIssueField(body, 'Origin'),
-        dose: parseIssueField(body, 'Dose'),
-        yield: parseIssueField(body, 'Yield'),
-        time: parseIssueField(body, 'Time'),
-        notes: parseIssueField(body, 'Notes'),
-        image: extractImageUrl(body),
-      });
+      const b = toBean(issue);
+      grouped[b.blend].push(b);
     }
+    grouped.specialty.sort(byRating);
+    grouped.house.sort(byRating);
     beansCache = grouped;
+    if(closed){
+      // a bean closed as "not planned" was deleted by hand on GitHub — keep it out of the book
+      finishedBeans = closed.filter(i => !i.pull_request && i.state_reason !== 'not_planned').map(toBean);
+    }
     renderCoffeePanel();
   }catch(e){
+    console.warn('Coffee: could not load beans', e);
     renderCoffeePanel(true);
   }
 }
 loadCoffeeBeans();
 setInterval(loadCoffeeBeans, 2*60*1000);
 
+// ---- detail modal ----
 function openBeanModal(number){
-  const bean = [...beansCache.specialty, ...beansCache.house].find(b => b.number === number);
+  const bean = findBean(number);
   if(!bean) return;
   const backdrop = document.getElementById('bean-modal-backdrop');
   const ratio = ratioString(bean.dose, bean.yield);
+  const f = freshness(bean);
+  const stat = (k, v) => v ? `<div><div class="k">${k}</div><div class="v">${escapeHtml(v)}</div></div>` : '';
   backdrop.innerHTML = `
     <div class="bean-modal">
-      <div class="bean-modal-close" id="bean-modal-close">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
-      </div>
-      ${bean.image ? `<img class="bean-modal-img" src="${bean.image}" alt="">` : ''}
+      <div class="bean-modal-close" id="bean-modal-close">${CLOSE_SVG}</div>
+      ${bean.image ? `<img class="bean-modal-img" src="${escapeHtml(bean.image)}" alt="">` : ''}
       <div class="bean-modal-body">
         <div>
+          ${bean.finished ? `<div class="card-label" style="margin-bottom:6px;">Finished bag</div>` : ''}
           <div class="bean-name">${escapeHtml(bean.name)}</div>
           <div class="bean-roaster">${escapeHtml([bean.roaster, bean.origin].filter(Boolean).join(' · '))}</div>
+          ${bean.rating ? `<div style="margin-top:10px;">${ratingDots(bean.rating, 'lg')}</div>` : ''}
         </div>
-        ${(bean.dose || bean.yield || bean.time) ? `
-        <div style="display:flex; gap:28px; flex-wrap:wrap; padding-top:14px; border-top:1px solid var(--border);">
-          ${bean.dose ? `<div><div class="k">Dose</div><div class="v">${escapeHtml(bean.dose)}</div></div>` : ''}
-          ${bean.yield ? `<div><div class="k">Yield</div><div class="v">${escapeHtml(bean.yield)}</div></div>` : ''}
-          ${bean.time ? `<div><div class="k">Time</div><div class="v">${escapeHtml(bean.time)}</div></div>` : ''}
-          ${ratio ? `<div><div class="k">Ratio</div><div class="v">${ratio}</div></div>` : ''}
+        ${(bean.dose || bean.yield || bean.time || bean.grind) ? `
+        <div class="bean-stats">
+          ${stat('Dose', bean.dose)}${stat('Yield', bean.yield)}${stat('Time', bean.time)}
+          ${stat('Ratio', ratio)}${stat('Grind', bean.grind)}
+        </div>` : ''}
+        ${f ? `<div class="bean-fresh-row">
+          <div><div class="k">Roasted</div><div class="v">${escapeHtml(bean.roastDate)}</div></div>
+          ${freshMark(bean, true)}
         </div>` : ''}
         ${bean.notes ? `<div style="font-size:14px; color:var(--muted); line-height:1.6;">${escapeHtml(bean.notes)}</div>` : ''}
+        <div class="bean-actions">
+          <button type="button" id="bean-finish">${bean.finished ? 'Put back on the shelf' : 'Finished bag'}</button>
+          <button type="button" class="primary" id="bean-edit">Edit</button>
+        </div>
       </div>
     </div>`;
   backdrop.classList.add('open');
   document.getElementById('bean-modal-close').addEventListener('click', closeBeanModal);
+  document.getElementById('bean-edit').addEventListener('click', () => openBeanEdit(number));
+  document.getElementById('bean-finish').addEventListener('click', () => setBeanFinished(number, !bean.finished));
 }
 function closeBeanModal(){
   document.getElementById('bean-modal-backdrop').classList.remove('open');
 }
+
+// ---- edit card ----
+function toInputDate(s){
+  const d = parseRoastDate(s);
+  if(!d) return '';
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function openBeanEdit(number){
+  const b = findBean(number);
+  if(!b) return;
+  let rating = parseInt(b.rating, 10) || 0;
+  const backdrop = document.getElementById('bean-modal-backdrop');
+  const field = (id, label, value, attrs='') =>
+    `<label class="be-field"><span class="k">${label}</span><input id="be-${id}" type="text" value="${escapeHtml(value || '')}" ${attrs}></label>`;
+  backdrop.innerHTML = `
+    <div class="bean-modal">
+      <div class="bean-modal-close" id="bean-modal-close">${CLOSE_SVG}</div>
+      <form class="bean-edit" id="bean-edit-form">
+        <div class="card-label">Edit bean</div>
+        <input class="be-name" id="be-name" type="text" maxlength="120" aria-label="Bean name" value="${escapeHtml(b.name)}">
+        <div class="be-grid">
+          ${field('roaster', 'Roaster / Cafe', b.roaster)}
+          ${field('origin', 'Origin', b.origin)}
+        </div>
+        <div class="be-grid four">
+          ${field('dose', 'Dose', b.dose, 'placeholder="18g"')}
+          ${field('yield', 'Yield', b.yield, 'placeholder="36g"')}
+          ${field('time', 'Time', b.time, 'placeholder="28s"')}
+          ${field('grind', 'Grind', b.grind, 'placeholder="2.5" inputmode="decimal"')}
+        </div>
+        <div class="be-grid">
+          <label class="be-field"><span class="k">Roast date</span><input id="be-roast" type="date" value="${toInputDate(b.roastDate)}"></label>
+          <div class="be-field"><span class="k">Rating</span>
+            <div class="be-rating" id="be-rating">${[1,2,3,4,5].map(i => `<button type="button" data-r="${i}" aria-label="${i} of 5"></button>`).join('')}</div>
+          </div>
+        </div>
+        <label class="be-field"><span class="k">Notes</span><textarea id="be-notes" rows="3">${escapeHtml(b.notes || '')}</textarea></label>
+        <div class="bean-actions">
+          <button type="button" id="be-cancel">Cancel</button>
+          <button type="submit" class="primary">Save</button>
+        </div>
+      </form>
+    </div>`;
+  backdrop.classList.add('open');
+  const ratingEl = document.getElementById('be-rating');
+  const paintRating = () => ratingEl.querySelectorAll('button').forEach(btn => btn.classList.toggle('on', +btn.dataset.r <= rating));
+  paintRating();
+  ratingEl.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    rating = (+btn.dataset.r === rating) ? 0 : +btn.dataset.r; // tap the same dot again to clear
+    paintRating();
+  });
+  document.getElementById('bean-modal-close').addEventListener('click', closeBeanModal);
+  document.getElementById('be-cancel').addEventListener('click', () => openBeanModal(number));
+  document.getElementById('bean-edit-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const val = id => document.getElementById('be-' + id).value.trim();
+    const next = {
+      name: val('name').replace(GRIND_IN_NAME, ' ').trim() || b.name,
+      roaster: val('roaster'), origin: val('origin'),
+      roastDate: val('roast'),
+      dose: val('dose'), yield: val('yield'), time: val('time'), grind: val('grind'),
+      rating: rating ? String(rating) : '',
+      notes: val('notes'),
+    };
+    let body = b.body;
+    for(const f of BEAN_FIELDS) body = setIssueField(body, f.label, next[f.key]);
+    const title = [next.roaster, next.name].filter(Boolean).join(' ');
+    if(body === b.body && title === b.title){ openBeanModal(number); return; }
+    if(!ensureToken()){ updateAllConnectUI(); return; }
+    updateAllConnectUI();
+    Object.assign(b, next, { body, title });
+    if(!b.finished){ beansCache[b.blend].sort(byRating); }
+    renderCoffeePanel();
+    openBeanModal(number);
+    try{
+      const res = await ghFetch(`/issues/${number}`, {
+        method:'PATCH', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ title, body })
+      });
+      if(!res.ok) throw new Error('failed');
+    }catch(err){
+      alert('Could not save that on GitHub — reloading to check the current state.');
+      loadCoffeeBeans();
+    }
+  });
+  setTimeout(() => document.getElementById('be-name')?.focus(), 50);
+}
+
+// ---- finished bag: closes the issue; the recipe stays in the recipe book ----
+async function setBeanFinished(number, finished){
+  const b = findBean(number);
+  if(!b) return;
+  if(!ensureToken()){ updateAllConnectUI(); return; }
+  updateAllConnectUI();
+  if(finished){
+    beansCache[b.blend] = beansCache[b.blend].filter(x => x !== b);
+    finishedBeans = [b, ...finishedBeans];
+  } else {
+    finishedBeans = finishedBeans.filter(x => x !== b);
+    beansCache[b.blend] = [...beansCache[b.blend], b].sort(byRating);
+  }
+  b.finished = finished;
+  closeBeanModal();
+  renderCoffeePanel();
+  try{
+    const res = await ghFetch(`/issues/${number}`, {
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(finished ? { state:'closed', state_reason:'completed' } : { state:'open' })
+    });
+    if(!res.ok) throw new Error('failed');
+  }catch(err){
+    alert('Could not save that on GitHub — reloading to check the current state.');
+    loadCoffeeBeans();
+  }
+}
+
+// ---- recipe book: every bean you've had, on the shelf or finished ----
+function openRecipeBook(){
+  const backdrop = document.getElementById('bean-modal-backdrop');
+  const row = b => {
+    const ratio = ratioString(b.dose, b.yield);
+    const f = !b.finished && freshness(b);
+    return `<button type="button" class="rb-row" data-number="${b.number}">
+      <span class="rb-main">
+        <span class="bean-name">${escapeHtml(b.name)}</span>
+        <span class="bean-roaster">${escapeHtml([b.roaster, b.origin].filter(Boolean).join(' · '))}</span>
+      </span>
+      <span class="rb-recipe">${escapeHtml([recipeLine(b), ratio].filter(Boolean).join(' · '))}${f ? `<br>${f.days}d off roast` : ''}</span>
+      <span class="rb-rate">${ratingDots(b.rating)}</span>
+    </button>`;
+  };
+  const onShelf = [...beansCache.specialty, ...beansCache.house].sort(byRating);
+  const past = [...finishedBeans].sort(byRating);
+  backdrop.innerHTML = `
+    <div class="bean-modal wide">
+      <div class="bean-modal-close" id="bean-modal-close">${CLOSE_SVG}</div>
+      <div class="recipe-book">
+        <div class="card-label" style="color:var(--c-coffee)">Recipe book</div>
+        <div class="rb-section">On the shelf · ${onShelf.length}</div>
+        ${onShelf.length ? onShelf.map(row).join('') : `<div class="bean-empty">Nothing on the shelf</div>`}
+        <div class="rb-section">Finished bags · ${past.length}</div>
+        ${past.length ? past.map(row).join('') : `<div class="bean-empty">Beans you mark as finished keep their recipe here.</div>`}
+      </div>
+    </div>`;
+  backdrop.classList.add('open');
+  document.getElementById('bean-modal-close').addEventListener('click', closeBeanModal);
+  backdrop.querySelectorAll('.rb-row').forEach(r => r.addEventListener('click', () => openBeanModal(parseInt(r.dataset.number, 10))));
+}
+document.getElementById('recipe-book-link')?.addEventListener('click', openRecipeBook);
+
 document.getElementById('bean-modal-backdrop')?.addEventListener('click', (e)=>{
   if(e.target.id === 'bean-modal-backdrop') closeBeanModal();
 });
@@ -1564,7 +2021,8 @@ async function moveBean(number, targetBlend){
   updateAllConnectUI();
   const bean = beansCache[currentBlend].find(b => b.number === number);
   beansCache[currentBlend] = beansCache[currentBlend].filter(b => b.number !== number);
-  beansCache[targetBlend] = [...beansCache[targetBlend], bean];
+  bean.blend = targetBlend;
+  beansCache[targetBlend] = [...beansCache[targetBlend], bean].sort(byRating);
   renderCoffeePanel();
   try{
     const res = await ghFetch(`/issues/${number}`, {

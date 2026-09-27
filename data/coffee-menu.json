@@ -1,0 +1,30 @@
+[
+  {
+    "section": "White",
+    "items": [
+      { "name": "Flat white", "desc": "Double shot · 120 ml milk, thin silky foam" },
+      { "name": "Latte", "desc": "Double shot · 180 ml milk, light foam" },
+      { "name": "Cappuccino", "desc": "Double shot · 120 ml milk, thick foam, cocoa" },
+      { "name": "Magic", "desc": "Double ristretto · 100 ml silky milk" },
+      { "name": "Piccolo", "desc": "Ristretto · 60 ml milk in a small glass" }
+    ]
+  },
+  {
+    "section": "Black",
+    "items": [
+      { "name": "Espresso", "desc": "Single shot · 30 ml, straight" },
+      { "name": "Doppio", "desc": "Double shot · 60 ml, straight" },
+      { "name": "Ristretto", "desc": "Short shot · 20 ml, sweeter and thicker" },
+      { "name": "Long black", "desc": "Double shot over 100 ml hot water" },
+      { "name": "Americano", "desc": "Double shot topped with 150 ml hot water" }
+    ]
+  },
+  {
+    "section": "Special",
+    "items": [
+      { "name": "Fridge cigarette", "desc": "Espresso shot over cold Coke Zero" },
+      { "name": "Aerocano", "desc": "Double shot and cold water, frothed, over ice" },
+      { "name": "Espresso sunrise", "desc": "Double shot over orange juice" }
+    ]
+  }
+]

@@ -99,16 +99,25 @@ a fourth without discussing it first:**
      60/hr unauthenticated limit. Todos (open + closed-this-week) and Coffee
      polling every 2 min would otherwise exceed it on a device with no token.
      It keeps the 401 → unauthenticated retry described below.
-   - **Coffee:** each bean = one issue (always left open — a bean doesn't
-     "complete"), tagged `coffee-bean` + `blend:specialty` or
-     `blend:house`. New beans always come in via the
-     `coffee-bean.yml` issue form (richer fields than a quick client-side
-     add — name, roaster, origin, dose/yield/time, notes, and an image
-     dragged into the form's body, which GitHub auto-hosts and which
-     `extractImageUrl()` pulls out of the issue body via regex on the
-     rendered markdown `![...](url)`). Recategorizing (drag between
-     Specialty/House on the panel) is the only client-side write, via
-     `PATCH /issues/{n}` — and it **replaces the full labels array**
+   - **Coffee:** each bean = one issue, tagged `coffee-bean` +
+     `blend:specialty` or `blend:house`. Open = on the shelf; closed
+     (`state_reason:completed`) = **finished bag** — it leaves the shelf but
+     stays in the **Recipe book**, and can be put back (reopened). A bean
+     closed as `not_planned` (deleted by hand) is ignored. New beans come in
+     via two issue forms — `coffee-bean.yml` (Specialty) and
+     `coffee-bean-house.yml` (House), one per blend so the panel's
+     "+ add bean" link can pick the blend without URL label tricks. Fields
+     are `### Label` body sections: Bean Name, Roaster / Cafe, Origin,
+     Roast Date, Dose, Yield, Time, Grind (Breville Dose Control Pro
+     setting), Rating (1–5), Notes, Image (dragged into the form, GitHub
+     auto-hosts it; `extractImageUrl()` pulls the first `![](url)` or
+     `<img src>` out of the body). Older beans have the grind typed into
+     the name ("Gateway (Grind Size: 2)") — `toBean()` moves it into `grind`
+     for display, and saving from the edit card cleans the name for good.
+     Client-side writes: drag between blends (labels), the **edit card**
+     (rewrites the body sections in place with `setIssueField()`, never
+     touching the Image section, plus title = "<roaster> <name>"), and
+     finished/put-back (state). The drag **replaces the full labels array**
      (`[coffee-bean, blend:<target>]`), not an additive patch, because
      GitHub's API has no "add/remove one label" verb on this endpoint.
      That's fine only because bean issues are constructed to carry
@@ -196,13 +205,43 @@ unloads — sent with `keepalive`). If the `PATCH` fails, alert and
 network; don't make it synchronous. The panel also refreshes after every
 write and whenever the device wakes (`visibilitychange`).
 
-**Coffee panel (bean catalog, replaced the old brew-journal concept
-entirely — don't resurrect "log a brew"):** two drag-and-drop grids,
-Specialty Blend and House Blend, plus a `coffee-setup` spec row at top read
-from `data/coffee-setup.json` (a small hand-edited array of `{label,
-value}` — machine, grinder, water, whatever gear is worth showing; edit
-that file directly, it's not wired to any Action or issue form since it
-changes rarely). Bean data comes from GitHub Issues, see Architecture
+**Coffee panel = the café (owner-chosen, a deliberate exception to the
+illustration/no-new-colour rules — Coffee only, don't "fix" it back, and
+don't spread the look to other panels; the old brew-journal concept is
+gone — don't resurrect "log a brew"; the owner also passed on a per-bean
+recipe-change history):** the stage is `assets/coffee-cafe.webp`
+(1536×1024, made by the owner in an image generator, shows the owner as
+the barista — it's public, as is the whole site). Everything live is
+pinned onto it: `.cafe` keeps the picture's 3:2 shape (`fitCafe()` sizes
+it to the panel and sets `--u` = 1% of its height; overlay sizes are in
+`--u`, positions in % of the picture). Measured spots in picture pixels:
+top shelf surface y140 (x32–757), lower shelf surface y343 (x32–708;
+headphones start ~x695, so lower-shelf bags stop before it), chalkboard
+black area x942–1500 / y45–437, machine x1045–1345, grinder x1348–1480,
+counter top y815–935. If the picture is ever replaced, re-measure these
+and update the `.shelf` / `.board` / `.gear-tag` rules. Pieces:
+- **Bags on the shelves** — Specialty on the top shelf, House below
+  (kraft vs. ink bag, paper label with roaster, name, rating dots),
+  best-rated first. `SHELF_SLOTS` (6/5) is what fits; the last slot is
+  "+ add bean" (that blend's issue form), or "+N more" (opens the Recipe
+  book) when full. Drag a bag between shelves to re-blend; tap for the
+  detail modal. Bags keep the `.bean-card` / `.bean-grid` classes that
+  `attachBeanCardHandlers()` uses.
+- **The chalkboard** is the owner's drinks menu, "On the bar": three
+  columns (White / Black / Special) read from `data/coffee-menu.json` — a
+  hand-edited `[{section, items:[{name, desc}]}]` file the owner wrote the
+  content for (desc = shot + milk/water amount). Edit that file to change
+  the menu; don't invent drinks into it. It fits 5 drinks per column on
+  the board — more needs smaller type or fewer words. The **Recipe book**
+  link (every bean on the shelf and every finished bag, with its recipe)
+  sits in the board's title row; bean recipes live there and on the bags,
+  not on the board.
+- **Gear tags** on the counter under the machine and grinder, from
+  `data/coffee-setup.json` (the `Machine` and `Grinder` rows of a small
+  hand-edited `{label, value}` array — edit it directly).
+- **Don't** put `transform`, `filter` or `contain` on `.cafe` or its
+  ancestors — the drag lifts a bag with `position:fixed`, which those would
+  re-anchor. Bean data comes from GitHub Issues, see Architecture
 pattern 3. A few things worth knowing before touching this:
 - **Drag-and-drop is hand-rolled on Pointer Events, not native HTML5
   DnD.** The `draggable` attribute's DnD API does not work reliably on iOS
@@ -215,11 +254,18 @@ pattern 3. A few things worth knowing before touching this:
   itself, decides which `.bean-grid` it was dropped on). Keep this
   approach for any future drag interaction in this app — don't swap in
   native `draggable` and assume it'll work on the iPad.
-- **Card face vs. detail modal:** the card shows name/roaster/recipe only;
-  tapping opens `#bean-modal-backdrop` with the full image, origin, the
-  dose/yield/time plus an auto-computed ratio (`ratioString()` — never ask
-  the user to type a ratio, derive it), and notes. Keep that split — don't
-  cram everything onto the card face.
+- **Card face vs. detail modal:** the card shows name/roaster/recipe
+  (dose → yield · time · grind), a freshness mark and rating dots only;
+  tapping opens `#bean-modal-backdrop` with the full image, origin,
+  dose/yield/time/grind plus an auto-computed ratio (`ratioString()` —
+  never ask the user to type a ratio, derive it), roast date, notes, and
+  Edit / Finished bag actions. Keep that split — don't cram everything onto
+  the card face. Cards are equal height (fixed-ratio image + clamped info
+  block), photo or not.
+- **Freshness:** `freshMark()` draws days off roast on a 0–45 day track
+  with the peak window (7–30 days, `REST_DAYS`/`PEAK_END_DAYS`) shaded;
+  "resting" before, "past peak" after. Roast dates parse as ISO or AU
+  day/month/year. Rating is 1–5 dots in `--c-coffee`, no stars/emoji.
 - **Images are never uploaded by this codebase.** There's no upload
   endpoint. A bean's image is whatever GitHub-hosted URL shows up in the
   issue body (the owner drags a photo into the issue form's Image field on
@@ -268,9 +314,13 @@ pattern 3. A few things worth knowing before touching this:
   preview, and leave the live panel as an honest empty state until a real
   source is picked.
 
-**PWA shell:** `manifest.json` + `sw.js` are already wired for
-Add-to-Home-Screen. Don't touch unless a panel needs offline behavior beyond
-what's there.
+**PWA shell:** `manifest.json` + `sw.js` are wired for Add-to-Home-Screen.
+`sw.js` is **network-first** for this site's own files (cache is only the
+offline fallback) so updates actually reach the always-on iPad, deletes old
+caches on activate, and never intercepts other origins (GitHub API, fonts,
+bean photos). The old version was cache-first with a fixed cache name and
+could pin an installed iPad to a stale `index.html` — don't go back to
+cache-first. Bump `CACHE` if you change what the shell pre-caches.
 
 ## Privacy tiers — apply automatically, don't ask each time
 
@@ -363,11 +413,6 @@ Strava/IBKR data assuming the URL is obscure enough — it isn't.
   wire these to fake/hardcoded data; they stay honest empty states until a
   real source is picked. (Today tile is resolved — see Home panel note
   above.)
-- **Coffee setup specs and initial beans:** `data/coffee-setup.json` ships
-  as an empty array and no bean issues exist yet — both need real content
-  from the owner (gear list; bean name/roaster/recipe/image per bean via
-  the issue form). Don't invent placeholder gear or beans into the live
-  data — ask, same as any other empty-state panel.
 - **Aspirational domains still open (board games, stats-flavored content):**
   these came out of a design-personality brief, not a build request. Accent
   tokens are reserved (see design system note above) but no panel, data
