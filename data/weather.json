@@ -1,10 +1,10 @@
 {
-  "temp": 11.7,
-  "feels_like": 9.6,
-  "condition": "Dense drizzle",
-  "wind_kmh": 14.5,
-  "humidity": 91,
-  "rain_chance": 94,
+  "temp": 13.9,
+  "feels_like": 11.9,
+  "condition": "Drizzle",
+  "wind_kmh": 15.7,
+  "humidity": 83,
+  "rain_chance": 92,
   "hourly": [
     {
       "hour": "00:00",
@@ -28,14 +28,14 @@
     },
     {
       "hour": "04:00",
-      "temp": 11.9,
+      "temp": 12.4,
       "condition": "Light drizzle"
     },
     {
       "hour": "05:00",
-      "temp": 11.9,
+      "temp": 12.4,
       "condition": "Light drizzle"
     }
   ],
-  "updated": "2026-10-01T21:22:14.761433+00:00"
+  "updated": "2026-10-02T00:59:47.940338+00:00"
 }
