@@ -1,10 +1,10 @@
 {
   "temp": 13.7,
-  "feels_like": 11.8,
+  "feels_like": 12.1,
   "condition": "Showers",
-  "wind_kmh": 18.6,
-  "humidity": 93,
-  "rain_chance": 84,
+  "wind_kmh": 16.2,
+  "humidity": 92,
+  "rain_chance": 97,
   "hourly": [
     {
       "hour": "00:00",
@@ -37,5 +37,5 @@
       "condition": "Showers"
     }
   ],
-  "updated": "2026-10-02T18:42:03.753231+00:00"
+  "updated": "2026-10-02T22:34:44.545387+00:00"
 }
