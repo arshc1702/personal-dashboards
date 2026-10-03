@@ -1,10 +1,10 @@
 {
-  "temp": 13.7,
-  "feels_like": 12.1,
-  "condition": "Showers",
-  "wind_kmh": 16.2,
-  "humidity": 92,
-  "rain_chance": 97,
+  "temp": 17.1,
+  "feels_like": 15.9,
+  "condition": "Thunderstorm",
+  "wind_kmh": 15.7,
+  "humidity": 79,
+  "rain_chance": 100,
   "hourly": [
     {
       "hour": "00:00",
@@ -28,14 +28,14 @@
     },
     {
       "hour": "04:00",
-      "temp": 13.8,
+      "temp": 14.1,
       "condition": "Light showers"
     },
     {
       "hour": "05:00",
-      "temp": 13.6,
-      "condition": "Showers"
+      "temp": 13.9,
+      "condition": "Thunderstorm"
     }
   ],
-  "updated": "2026-10-02T22:34:44.545387+00:00"
+  "updated": "2026-10-03T01:27:27.883380+00:00"
 }
