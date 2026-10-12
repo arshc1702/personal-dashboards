@@ -1,41 +1,41 @@
 {
-  "temp": 13.5,
-  "feels_like": 11.5,
-  "condition": "Partly cloudy",
-  "wind_kmh": 8.2,
-  "humidity": 63,
+  "temp": 9.6,
+  "feels_like": 7.0,
+  "condition": "Overcast",
+  "wind_kmh": 9.0,
+  "humidity": 72,
   "rain_chance": 0,
   "hourly": [
     {
-      "hour": "20:00",
-      "temp": 13.5,
-      "condition": "Partly cloudy"
-    },
-    {
-      "hour": "21:00",
-      "temp": 12.8,
+      "hour": "06:00",
+      "temp": 9.6,
       "condition": "Overcast"
     },
     {
-      "hour": "22:00",
-      "temp": 12.6,
-      "condition": "Overcast"
+      "hour": "07:00",
+      "temp": 9.6,
+      "condition": "Mainly clear"
     },
     {
-      "hour": "23:00",
-      "temp": 11.9,
-      "condition": "Overcast"
+      "hour": "08:00",
+      "temp": 11.0,
+      "condition": "Mainly clear"
     },
     {
-      "hour": "00:00",
-      "temp": 11.4,
-      "condition": "Overcast"
+      "hour": "09:00",
+      "temp": 12.2,
+      "condition": "Mainly clear"
     },
     {
-      "hour": "01:00",
-      "temp": 11.1,
-      "condition": "Overcast"
+      "hour": "10:00",
+      "temp": 13.0,
+      "condition": "Mainly clear"
+    },
+    {
+      "hour": "11:00",
+      "temp": 13.1,
+      "condition": "Light drizzle"
     }
   ],
-  "updated": "2026-10-12T09:11:36.462439+00:00"
+  "updated": "2026-10-12T19:04:12.335458+00:00"
 }
