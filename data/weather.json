@@ -1,10 +1,10 @@
 {
-  "temp": 15.4,
-  "feels_like": 15.5,
-  "condition": "Partly cloudy",
-  "wind_kmh": 4.7,
-  "humidity": 83,
-  "rain_chance": 21,
+  "temp": 17.4,
+  "feels_like": 17.3,
+  "condition": "Light drizzle",
+  "wind_kmh": 5.6,
+  "humidity": 73,
+  "rain_chance": 24,
   "hourly": [
     {
       "hour": "00:00",
@@ -37,5 +37,5 @@
       "condition": "Partly cloudy"
     }
   ],
-  "updated": "2026-10-23T19:47:00.957194+00:00"
+  "updated": "2026-10-23T22:53:49.119868+00:00"
 }
