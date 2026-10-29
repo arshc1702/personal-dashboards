@@ -1,9 +1,9 @@
 {
-  "temp": 10.2,
-  "feels_like": 10.1,
+  "temp": 10.9,
+  "feels_like": 10.3,
   "condition": "Fog",
-  "wind_kmh": 1.0,
-  "humidity": 100,
+  "wind_kmh": 4.8,
+  "humidity": 98,
   "rain_chance": 0,
   "hourly": [
     {
@@ -18,24 +18,24 @@
     },
     {
       "hour": "02:00",
-      "temp": 11.2,
+      "temp": 11.1,
       "condition": "Clear sky"
     },
     {
       "hour": "03:00",
-      "temp": 10.4,
+      "temp": 10.5,
       "condition": "Fog"
     },
     {
       "hour": "04:00",
-      "temp": 9.6,
+      "temp": 10.2,
       "condition": "Fog"
     },
     {
       "hour": "05:00",
-      "temp": 9.5,
+      "temp": 10.2,
       "condition": "Fog"
     }
   ],
-  "updated": "2026-10-29T16:19:50.297592+00:00"
+  "updated": "2026-10-29T21:18:11.748627+00:00"
 }
