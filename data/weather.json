@@ -1,10 +1,10 @@
 {
-  "temp": 18.3,
-  "feels_like": 18.1,
-  "condition": "Mainly clear",
-  "wind_kmh": 6.2,
-  "humidity": 54,
-  "rain_chance": 2,
+  "temp": 17.7,
+  "feels_like": 17.0,
+  "condition": "Partly cloudy",
+  "wind_kmh": 5.2,
+  "humidity": 62,
+  "rain_chance": 11,
   "hourly": [
     {
       "hour": "00:00",
@@ -37,5 +37,5 @@
       "condition": "Clear sky"
     }
   ],
-  "updated": "2026-11-01T01:24:03.077897+00:00"
+  "updated": "2026-11-01T07:51:29.344770+00:00"
 }
