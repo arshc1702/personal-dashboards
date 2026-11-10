@@ -1,41 +1,41 @@
 {
-  "temp": 15.2,
-  "feels_like": 15.0,
-  "condition": "Clear sky",
-  "wind_kmh": 8.0,
-  "humidity": 88,
-  "rain_chance": 4,
+  "temp": 18.0,
+  "feels_like": 17.1,
+  "condition": "Mainly clear",
+  "wind_kmh": 17.9,
+  "humidity": 70,
+  "rain_chance": 0,
   "hourly": [
     {
-      "hour": "05:00",
+      "hour": "00:00",
+      "temp": 18.5,
+      "condition": "Mainly clear"
+    },
+    {
+      "hour": "01:00",
+      "temp": 17.7,
+      "condition": "Mainly clear"
+    },
+    {
+      "hour": "02:00",
+      "temp": 16.5,
+      "condition": "Light drizzle"
+    },
+    {
+      "hour": "03:00",
+      "temp": 15.8,
+      "condition": "Partly cloudy"
+    },
+    {
+      "hour": "04:00",
       "temp": 15.2,
       "condition": "Clear sky"
     },
     {
-      "hour": "06:00",
-      "temp": 15.0,
+      "hour": "05:00",
+      "temp": 14.8,
       "condition": "Clear sky"
-    },
-    {
-      "hour": "07:00",
-      "temp": 15.5,
-      "condition": "Clear sky"
-    },
-    {
-      "hour": "08:00",
-      "temp": 16.5,
-      "condition": "Clear sky"
-    },
-    {
-      "hour": "09:00",
-      "temp": 17.2,
-      "condition": "Mainly clear"
-    },
-    {
-      "hour": "10:00",
-      "temp": 17.7,
-      "condition": "Overcast"
     }
   ],
-  "updated": "2026-11-10T18:07:56.037043+00:00"
+  "updated": "2026-11-10T23:20:18.849792+00:00"
 }
