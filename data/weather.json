@@ -1,41 +1,41 @@
 {
-  "temp": 10.5,
-  "feels_like": 9.2,
+  "temp": 12.1,
+  "feels_like": 11.0,
   "condition": "Partly cloudy",
-  "wind_kmh": 6.6,
-  "humidity": 91,
-  "rain_chance": 6,
+  "wind_kmh": 6.7,
+  "humidity": 85,
+  "rain_chance": 0,
   "hourly": [
     {
-      "hour": "00:00",
-      "temp": 12.9,
+      "hour": "08:00",
+      "temp": 12.1,
+      "condition": "Partly cloudy"
+    },
+    {
+      "hour": "09:00",
+      "temp": 13.4,
+      "condition": "Partly cloudy"
+    },
+    {
+      "hour": "10:00",
+      "temp": 14.4,
       "condition": "Light drizzle"
     },
     {
-      "hour": "01:00",
-      "temp": 12.2,
-      "condition": "Partly cloudy"
+      "hour": "11:00",
+      "temp": 15.3,
+      "condition": "Light drizzle"
     },
     {
-      "hour": "02:00",
-      "temp": 11.3,
-      "condition": "Partly cloudy"
+      "hour": "12:00",
+      "temp": 16.3,
+      "condition": "Light drizzle"
     },
     {
-      "hour": "03:00",
-      "temp": 10.9,
-      "condition": "Partly cloudy"
-    },
-    {
-      "hour": "04:00",
-      "temp": 10.4,
-      "condition": "Partly cloudy"
-    },
-    {
-      "hour": "05:00",
-      "temp": 10.2,
-      "condition": "Partly cloudy"
+      "hour": "13:00",
+      "temp": 16.7,
+      "condition": "Light drizzle"
     }
   ],
-  "updated": "2026-11-14T16:53:51.745122+00:00"
+  "updated": "2026-11-14T21:06:14.159936+00:00"
 }
