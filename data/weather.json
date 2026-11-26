@@ -1,16 +1,11 @@
 {
-  "temp": 18.1,
-  "feels_like": 17.9,
-  "condition": "Mainly clear",
-  "wind_kmh": 11.3,
-  "humidity": 80,
-  "rain_chance": 0,
+  "temp": 26.7,
+  "feels_like": 28.5,
+  "condition": "Partly cloudy",
+  "wind_kmh": 10.9,
+  "humidity": 50,
+  "rain_chance": 23,
   "hourly": [
-    {
-      "hour": "23:00",
-      "temp": 18.1,
-      "condition": "Mainly clear"
-    },
     {
       "hour": "00:00",
       "temp": 17.5,
@@ -28,14 +23,19 @@
     },
     {
       "hour": "03:00",
-      "temp": 15.7,
+      "temp": 15.6,
       "condition": "Overcast"
     },
     {
       "hour": "04:00",
-      "temp": 15.1,
+      "temp": 15.0,
+      "condition": "Overcast"
+    },
+    {
+      "hour": "05:00",
+      "temp": 14.2,
       "condition": "Overcast"
     }
   ],
-  "updated": "2026-11-25T12:08:15.076345+00:00"
+  "updated": "2026-11-26T03:46:34.095053+00:00"
 }
